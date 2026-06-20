@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://dxt2rc10qy5w4"]
+
+[ext_resource type="Script" path="res://scripts/jellyfish.gd" id="1_jelly"]
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_jelly"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_jelly"]
+radius = 12.0
+height = 36.0
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_jelly"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+
+[node name="Jellyfish" type="Area2D"]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_jelly")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+self_modulate = Color(0.8, 0.4, 0.9, 0.7)
+scale = Vector2(24, 24)
+texture = SubResource("CanvasTexture_jelly")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("CapsuleShape2D_jelly")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_jelly")
