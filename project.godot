@@ -11,8 +11,8 @@ config_version=5
 [application]
 
 config/name="Motion"
-run/main_scene="uid://crygau4xdeumf"
-config/features=PackedStringArray("4.7", "GL Compatibility")
+run/main_scene="uid://cppfb3dyhpkq4"
+config/features=PackedStringArray("4.6", "GL Compatibility")
 boot_splash/bg_color=Color(0.24705882, 0.3764706, 0.92941177, 1)
 config/icon="res://icon.svg"
 
@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 
 window/size/resizable=false
 window/stretch/mode="viewport"
+window/stretch/aspect="expand"
 
 [editor]
 
