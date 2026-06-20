@@ -5,21 +5,34 @@ extends Node2D
 
 var player_scene = preload("res://scenes/player.tscn")
 var local_player: CharacterBody2D
+var player_status = {}
 
-var hud_canvas: CanvasLayer
-var oxygen_bar: ProgressBar
-var depth_label: Label
+@onready var hud_canvas: CanvasLayer = $HUD
+@onready var oxygen_bar: ProgressBar = $HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/OxygenBar
+@onready var depth_label: Label = $HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/InfoHBox/DepthLabel
+@onready var name_label: Label = $HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/InfoHBox/NameLabel
+var oxygen_bar_fill: StyleBoxFlat
 
 func _ready() -> void:
+	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	if multiplayer.is_server():
 		spawn_players()
+		var level_seed = randi()
+		$LevelGenerator.generate_level(level_seed)
+		$ShoalTimer.timeout.connect(_on_shoal_timer_timeout)
+	else:
+		$ShoalTimer.stop()
+		
 	setup_hud()
 
 func spawn_players() -> void:
 	var spawn_points = [spawn_point_1, spawn_point_2]
 	var index = 0
 	
+	player_status.clear()
 	for peer_id in MultiplayerManager.players:
+		player_status[peer_id] = "alive"
+		
 		var player_instance = player_scene.instantiate()
 		player_instance.name = str(peer_id)
 		
@@ -31,82 +44,8 @@ func spawn_players() -> void:
 		index += 1
 
 func setup_hud() -> void:
-	hud_canvas = CanvasLayer.new()
-	add_child(hud_canvas)
-	
-	var hud_root = Control.new()
-	hud_root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	hud_canvas.add_child(hud_root)
-	
-	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(300, 60)
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.1, 0.2, 0.75)
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_color = Color(0.2, 0.4, 0.7, 0.5)
-	panel.add_theme_stylebox_override("panel", style)
-	
-	hud_root.add_child(panel)
-	panel.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	panel.position = Vector2(20, -80)
-	
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 15)
-	margin.add_theme_constant_override("margin_right", 15)
-	margin.add_theme_constant_override("margin_top", 10)
-	margin.add_theme_constant_override("margin_bottom", 10)
-	panel.add_child(margin)
-	
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 5)
-	margin.add_child(vbox)
-	
-	var info_hbox = HBoxContainer.new()
-	vbox.add_child(info_hbox)
-	
-	var name_label = Label.new()
 	name_label.text = MultiplayerManager.local_player_name
-	name_label.add_theme_font_size_override("font_size", 12)
-	name_label.add_theme_color_override("font_color", Color(0.3, 0.75, 1.0))
-	info_hbox.add_child(name_label)
-	
-	var spacer = Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_hbox.add_child(spacer)
-	
-	depth_label = Label.new()
-	depth_label.text = "Depth: 0m"
-	depth_label.add_theme_font_size_override("font_size", 12)
-	depth_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
-	info_hbox.add_child(depth_label)
-	
-	oxygen_bar = ProgressBar.new()
-	oxygen_bar.max_value = 100.0
-	oxygen_bar.value = 100.0
-	oxygen_bar.show_percentage = false
-	oxygen_bar.custom_minimum_size = Vector2(0, 16)
-	
-	var fg_style = StyleBoxFlat.new()
-	fg_style.bg_color = Color(0.2, 0.8, 0.4)
-	fg_style.corner_radius_top_left = 4
-	fg_style.corner_radius_top_right = 4
-	fg_style.corner_radius_bottom_left = 4
-	fg_style.corner_radius_bottom_right = 4
-	
-	var bg_style = StyleBoxFlat.new()
-	bg_style.bg_color = Color(0.1, 0.15, 0.2)
-	bg_style.corner_radius_top_left = 4
-	bg_style.corner_radius_top_right = 4
-	bg_style.corner_radius_bottom_left = 4
-	bg_style.corner_radius_bottom_right = 4
-	
-	oxygen_bar.add_theme_stylebox_override("fill", fg_style)
-	oxygen_bar.add_theme_stylebox_override("background", bg_style)
-	vbox.add_child(oxygen_bar)
+	oxygen_bar_fill = oxygen_bar.get_theme_stylebox("fill") as StyleBoxFlat
 
 func _process(_delta: float) -> void:
 	if local_player == null:
@@ -116,26 +55,97 @@ func _process(_delta: float) -> void:
 			local_player = player_node
 	
 	if local_player != null:
-		oxygen_bar.value = local_player.oxygen
-		
-		var fill_style = oxygen_bar.get_theme_stylebox("fill") as StyleBoxFlat
-		if fill_style:
-			if local_player.oxygen > 50:
-				fill_style.bg_color = Color(0.2, 0.8, 0.4)
-			elif local_player.oxygen > 20:
-				fill_style.bg_color = Color(0.9, 0.6, 0.1)
-			else:
-				fill_style.bg_color = Color(0.9, 0.2, 0.2)
-		
 		var depth_m = max(0, int(local_player.position.y / 10))
 		depth_label.text = "Depth: " + str(depth_m) + "m"
+		
+		if oxygen_bar:
+			oxygen_bar.value = local_player.oxygen
+			if oxygen_bar_fill:
+				if local_player.oxygen > 50:
+					oxygen_bar_fill.bg_color = Color(0.2, 0.8, 0.4)
+				elif local_player.oxygen > 20:
+					oxygen_bar_fill.bg_color = Color(0.9, 0.6, 0.1)
+				else:
+					oxygen_bar_fill.bg_color = Color(0.9, 0.2, 0.2)
 
 func player_died(peer_id: int) -> void:
 	print("Game: Player ", peer_id, " died.")
-	if peer_id == multiplayer.get_unique_id():
-		call_deferred("_transition_to_death")
+	
+	if not multiplayer.is_server():
+		return
+		
+	player_status[peer_id] = "dead"
+	
+	var all_dead = true
+	for p_id in player_status:
+		if player_status[p_id] == "alive":
+			all_dead = false
+			break
+			
+	if all_dead:
+		print("Game: All players are dead. Game Over!")
+		transition_to_death.rpc()
+	else:
+		print("Game: Starting 5s respawn timer for player ", peer_id)
+		await get_tree().create_timer(5.0).timeout
+		
+		if player_status.get(peer_id) == "dead" and not all_dead:
+			var survivor_pos = Vector2.ZERO
+			for p_id in player_status:
+				if player_status[p_id] == "alive":
+					var survivor_node = get_node_or_null(str(p_id))
+					if survivor_node:
+						survivor_pos = survivor_node.position
+						break
+			
+			player_status[peer_id] = "alive"
+			respawn_player.rpc(peer_id, survivor_pos)
+
+@rpc("authority", "call_local", "reliable")
+func respawn_player(peer_id: int, pos: Vector2) -> void:
+	var player_node = get_node_or_null(str(peer_id))
+	if player_node:
+		player_node.respawn(pos)
+
+@rpc("authority", "call_local", "reliable")
+func transition_to_death() -> void:
+	call_deferred("_transition_to_death")
 
 func _transition_to_death() -> void:
 	multiplayer.multiplayer_peer = null
 	MultiplayerManager.players.clear()
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
+
+func _on_shoal_timer_timeout() -> void:
+	if not multiplayer.is_server():
+		return
+	
+	var living_players = []
+	for p_id in player_status:
+		if player_status[p_id] == "alive":
+			var p_node = get_node_or_null(str(p_id))
+			if p_node:
+				living_players.append(p_node)
+				
+	if living_players.size() > 0:
+		var target_player = living_players[randi() % living_players.size()]
+		var spawn_depth = target_player.position.y
+		
+		var shoal_scene = preload("res://scenes/shoal_of_fish.tscn")
+		var shoal = shoal_scene.instantiate()
+		shoal.position = Vector2(-600, spawn_depth)
+		shoal.name = "Shoal_" + str(Time.get_ticks_msec())
+		add_child(shoal)
+
+func _on_peer_disconnected(id: int) -> void:
+	if id in player_status:
+		player_status.erase(id)
+	
+	if multiplayer.is_server():
+		var all_dead = true
+		for p_id in player_status:
+			if player_status[p_id] == "alive":
+				all_dead = false
+				break
+		if all_dead:
+			transition_to_death.rpc()

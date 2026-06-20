@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://coxyspottscn"]
+
+[ext_resource type="Script" path="res://scripts/oxygen_spot.gd" id="1_ox"]
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_ox"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ox"]
+size = Vector2(20, 20)
+
+[node name="OxygenSpot" type="Area2D"]
+collision_layer = 8
+collision_mask = 2
+script = ExtResource("1_ox")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+self_modulate = Color(0.2, 0.8, 0.5, 1)
+scale = Vector2(20, 20)
+texture = SubResource("CanvasTexture_ox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_ox")
