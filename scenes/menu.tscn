@@ -6,6 +6,8 @@
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_ouk20"]
 
+[sub_resource type="CanvasTexture" id="CanvasTexture_3fdaa"]
+
 [sub_resource type="CanvasTexture" id="CanvasTexture_nm2nm"]
 
 [node name="menu" type="Node2D" unique_id=150216082]
@@ -30,6 +32,11 @@ vertical_alignment = 1
 script = ExtResource("3_con2f")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1823212847]
+
+[node name="water" type="Sprite2D" parent="." unique_id=78868356]
+position = Vector2(24.999977, 184.5)
+scale = Vector2(1303.9999, 336.99997)
+texture = SubResource("CanvasTexture_3fdaa")
 
 [node name="boat" type="Sprite2D" parent="." unique_id=2005284463]
 position = Vector2(0.5000076, 1.0223367)
