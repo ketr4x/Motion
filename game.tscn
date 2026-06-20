@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://cmjqqrankbxfv"]
+
+[ext_resource type="Script" path="res://character_body_2d.gd" id="1_80nbo"]
+[ext_resource type="Script" path="res://game.gd" id="1_e2o6t"]
+[ext_resource type="PackedScene" uid="uid://e1e3pxmxrmhg" path="res://scenes/bg.tscn" id="3_feb5d"]
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_feb5d"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fc0e3"]
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_7jktm"]
+
+[node name="Game" type="Node2D" unique_id=1168081893]
+script = ExtResource("1_e2o6t")
+
+[node name="CharacterBody2D" type="CharacterBody2D" parent="." unique_id=1075508254]
+script = ExtResource("1_80nbo")
+
+[node name="Camera2D" type="Camera2D" parent="CharacterBody2D" unique_id=1743585990 groups=["camera"]]
+
+[node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D" unique_id=24952418]
+scale = Vector2(20, 20.000002)
+texture = SubResource("CanvasTexture_feb5d")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D" unique_id=567997664]
+shape = SubResource("RectangleShape2D_fc0e3")
+
+[node name="test;-)" type="Sprite2D" parent="." unique_id=1103460137]
+position = Vector2(32.635582, 6.910198)
+texture = SubResource("CanvasTexture_7jktm")
+
+[node name="test;-)" type="Sprite2D" parent="test;-)" unique_id=1824143797]
+position = Vector2(25.25, 45.25)
+scale = Vector2(15.771164, 77.6796)
+texture = SubResource("CanvasTexture_7jktm")
+
+[node name="Far" parent="." unique_id=1809727048 instance=ExtResource("3_feb5d")]
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1620211158]
+anchor_mode = 0
