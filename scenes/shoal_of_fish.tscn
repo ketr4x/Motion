@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://cshoaltscn"]
+
+[ext_resource type="Script" path="res://scripts/shoal_of_fish.gd" id="1_shoal"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_shoal"]
+size = Vector2(300, 120)
+
+[node name="ShoalOfFish" type="Area2D"]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_shoal")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_shoal")

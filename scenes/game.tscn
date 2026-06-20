@@ -1,24 +1,112 @@
 [gd_scene format=3 uid="uid://crygau4xdeumf"]
 
 [ext_resource type="Script" uid="uid://da3qj5xlh86ye" path="res://scripts/game.gd" id="1_e2o6t"]
+[ext_resource type="Script" uid="uid://lv4muoupgwg1" path="res://scripts/level_generator.gd" id="2_lvlgen"]
+[ext_resource type="FontFile" uid="uid://di8wo4lhpfqr5" path="res://assets/Cairopixel.ttf" id="3_font"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_bg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.02, 0.04, 0.08, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.65, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.1, 0.12, 0.16, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.4, 0.6, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fg"]
+bg_color = Color(0.2, 0.8, 0.4, 1)
 
 [node name="Game" type="Node2D" unique_id=1168081893]
 script = ExtResource("1_e2o6t")
 
-[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("res://scenes/player.tscn")
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=902365000]
+_spawnable_scenes = PackedStringArray("uid://df5s7hsk8vswp", "uid://cspiketscn", "uid://coxyspottscn", "uid://cshoaltscn")
 spawn_path = NodePath("..")
 
-[node name="SpawnPoint1" type="Node2D" parent="."]
+[node name="SpawnPoint1" type="Node2D" parent="." unique_id=668066246]
 position = Vector2(-50, 0)
 
-[node name="SpawnPoint2" type="Node2D" parent="."]
+[node name="SpawnPoint2" type="Node2D" parent="." unique_id=2010228987]
 position = Vector2(50, 0)
 
-[node name="OceanBG" type="Sprite2D" parent="."]
+[node name="LevelGenerator" type="Node2D" parent="." unique_id=360970816]
+script = ExtResource("2_lvlgen")
+
+[node name="OceanBG" type="Sprite2D" parent="." unique_id=1906316384]
 self_modulate = Color(0.02, 0.08, 0.18, 1)
 z_index = -10
 scale = Vector2(2000, 4000)
 texture = SubResource("CanvasTexture_bg")
+
+[node name="ShoalTimer" type="Timer" parent="." unique_id=1240718529]
+wait_time = 6.0
+autostart = true
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=705492217]
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD" unique_id=328542729]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="PanelContainer" type="PanelContainer" parent="HUD/MarginContainer" unique_id=1761885985]
+custom_minimum_size = Vector2(200, 56)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/MarginContainer/PanelContainer" unique_id=290577270]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/MarginContainer/PanelContainer/MarginContainer" unique_id=1940166017]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="InfoHBox" type="HBoxContainer" parent="HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1393329709]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/InfoHBox" unique_id=773086098]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.75, 1, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 14
+text = "Player"
+
+[node name="Spacer" type="Control" parent="HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/InfoHBox" unique_id=1313773983]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DepthLabel" type="Label" parent="HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/InfoHBox" unique_id=1379580475]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 14
+text = "Depth: 0m"
+
+[node name="OxygenBar" type="ProgressBar" parent="HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=598493807]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_fg")
+value = 100.0
+show_percentage = false

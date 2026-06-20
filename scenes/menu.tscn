@@ -2,8 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bvjfwcsgu5axn" path="res://scripts/menu.gd" id="1_con2f"]
 [ext_resource type="Texture2D" uid="uid://b3vf4tr45nqa0" path="res://assets/BG.png" id="2_bg_tex"]
-[ext_resource type="FontFile" path="res://assets/Cairopixel.ttf" id="3_font"]
-
+[ext_resource type="FontFile" uid="uid://di8wo4lhpfqr5" path="res://assets/Cairopixel.ttf" id="3_font"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.02, 0.04, 0.08, 1)
@@ -27,6 +26,13 @@ region = Rect2(320, 960, 320, 320)
 [sub_resource type="Theme" id="Theme_cairopixel"]
 default_font = ExtResource("3_font")
 default_font_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boat"]
+bg_color = Color(0.45, 0.3, 0.2, 1)
+border_width_top = 4
+border_color = Color(0.6, 0.45, 0.35, 1)
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.02, 0.06, 0.12, 0.7)
@@ -79,13 +85,6 @@ corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 shadow_color = Color(0.2, 0.5, 0.8, 0.3)
 shadow_size = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boat"]
-bg_color = Color(0.45, 0.3, 0.2, 1)
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-border_width_top = 4
-border_color = Color(0.6, 0.45, 0.35, 1)
 
 [node name="menu" type="Node2D" unique_id=150216082]
 script = ExtResource("1_con2f")
@@ -158,36 +157,36 @@ scale_amount_min = 2.0
 scale_amount_max = 5.0
 color = Color(0.4, 0.7, 1, 0.35)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer" unique_id=1648112029]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="LogoContainer" type="Control" parent="CanvasLayer/VBoxContainer"]
+[node name="LogoContainer" type="Control" parent="CanvasLayer/VBoxContainer" unique_id=1424617692]
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 
-[node name="Logo" type="Label" parent="CanvasLayer/VBoxContainer/LogoContainer"]
-theme = SubResource("Theme_cairopixel")
+[node name="Logo" type="Label" parent="CanvasLayer/VBoxContainer/LogoContainer" unique_id=113207863]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = SubResource("Theme_cairopixel")
 theme_override_colors/font_color = Color(0.3, 0.75, 1, 1)
 theme_override_font_sizes/font_size = 56
 text = "M O T I O N"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="WorldContainer" type="Control" parent="CanvasLayer/VBoxContainer"]
+[node name="WorldContainer" type="Control" parent="CanvasLayer/VBoxContainer" unique_id=1150650235]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Sea" type="ColorRect" parent="CanvasLayer/VBoxContainer/WorldContainer"]
+[node name="Sea" type="ColorRect" parent="CanvasLayer/VBoxContainer/WorldContainer" unique_id=942470475]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -198,7 +197,7 @@ grow_horizontal = 2
 grow_vertical = 0
 color = Color(0.03, 0.08, 0.16, 0.8)
 
-[node name="Boat" type="Panel" parent="CanvasLayer/VBoxContainer/WorldContainer"]
+[node name="Boat" type="Panel" parent="CanvasLayer/VBoxContainer/WorldContainer" unique_id=2060751244]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -213,7 +212,7 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_boat")
 
-[node name="Player1" type="ColorRect" parent="CanvasLayer/VBoxContainer/WorldContainer/Boat"]
+[node name="Player1" type="ColorRect" parent="CanvasLayer/VBoxContainer/WorldContainer/Boat" unique_id=981292094]
 visible = false
 layout_mode = 0
 offset_left = 40.0
@@ -222,7 +221,7 @@ offset_right = 60.0
 offset_bottom = -2.0
 color = Color(0.2, 0.6, 1, 1)
 
-[node name="Player2" type="ColorRect" parent="CanvasLayer/VBoxContainer/WorldContainer/Boat"]
+[node name="Player2" type="ColorRect" parent="CanvasLayer/VBoxContainer/WorldContainer/Boat" unique_id=108844162]
 visible = false
 layout_mode = 0
 offset_left = 140.0
@@ -231,130 +230,130 @@ offset_right = 160.0
 offset_bottom = -2.0
 color = Color(0.2, 0.9, 0.6, 1)
 
-[node name="UIContainer" type="CenterContainer" parent="CanvasLayer/VBoxContainer"]
+[node name="UIContainer" type="CenterContainer" parent="CanvasLayer/VBoxContainer" unique_id=1155087973]
 custom_minimum_size = Vector2(0, 260)
 layout_mode = 2
 theme = SubResource("Theme_cairopixel")
 
-[node name="MainPanel" type="PanelContainer" parent="CanvasLayer/VBoxContainer/UIContainer"]
+[node name="MainPanel" type="PanelContainer" parent="CanvasLayer/VBoxContainer/UIContainer" unique_id=1388879694]
 custom_minimum_size = Vector2(400, 240)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel" unique_id=1705381159]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer" unique_id=1623670928]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Subtitle" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer"]
+[node name="Subtitle" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer" unique_id=752100111]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.7, 0.8, 1)
 theme_override_font_sizes/font_size = 12
 text = "Connect to start diving!"
 horizontal_alignment = 1
 
-[node name="NameBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer"]
+[node name="NameBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer" unique_id=1643914694]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/NameBox"]
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/NameBox" unique_id=1332897000]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Name:"
 
-[node name="NameInput" type="LineEdit" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/NameBox"]
+[node name="NameInput" type="LineEdit" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/NameBox" unique_id=248813877]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_input")
 
-[node name="IPBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer"]
+[node name="IPBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer" unique_id=1295341425]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/IPBox"]
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/IPBox" unique_id=2095174261]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Server IP:"
 
-[node name="IPInput" type="LineEdit" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/IPBox"]
+[node name="IPInput" type="LineEdit" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/IPBox" unique_id=1119211237]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_input")
 placeholder_text = "127.0.0.1 (Localhost)"
 
-[node name="ButtonsBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer"]
+[node name="ButtonsBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer" unique_id=175131149]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="HostButton" type="Button" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/ButtonsBox"]
+[node name="HostButton" type="Button" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/ButtonsBox" unique_id=1356383975]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 text = "Host"
 
-[node name="JoinButton" type="Button" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/ButtonsBox"]
+[node name="JoinButton" type="Button" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/ButtonsBox" unique_id=1414769049]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 text = "Join"
 
-[node name="SettingsButton" type="Button" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/ButtonsBox"]
+[node name="SettingsButton" type="Button" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer/ButtonsBox" unique_id=273117537]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 text = "Settings"
 
-[node name="StatusLabel" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer"]
+[node name="StatusLabel" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/MainPanel/MarginContainer/VBoxContainer" unique_id=1948278385]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 10
 text = "Status: Ready"
 horizontal_alignment = 1
 
-[node name="LobbyPanel" type="PanelContainer" parent="CanvasLayer/VBoxContainer/UIContainer"]
+[node name="LobbyPanel" type="PanelContainer" parent="CanvasLayer/VBoxContainer/UIContainer" unique_id=224750273]
 visible = false
 custom_minimum_size = Vector2(400, 240)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel" unique_id=873714619]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel/MarginContainer" unique_id=1674334394]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="LobbyTitle" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel/MarginContainer/VBoxContainer"]
+[node name="LobbyTitle" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel/MarginContainer/VBoxContainer" unique_id=622348695]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.75, 1, 1)
 theme_override_font_sizes/font_size = 16
 text = "DIVE LOBBY"
 horizontal_alignment = 1
 
-[node name="PlayerList" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel/MarginContainer/VBoxContainer"]
+[node name="PlayerList" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel/MarginContainer/VBoxContainer" unique_id=257332737]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Waiting for players..."
 horizontal_alignment = 1
 
-[node name="ButtonsBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel/MarginContainer/VBoxContainer"]
+[node name="ButtonsBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel/MarginContainer/VBoxContainer" unique_id=569068048]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="StartButton" type="Button" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel/MarginContainer/VBoxContainer/ButtonsBox"]
+[node name="StartButton" type="Button" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel/MarginContainer/VBoxContainer/ButtonsBox" unique_id=2065760063]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
@@ -362,73 +361,73 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 text = "Ready Up"
 
-[node name="LeaveButton" type="Button" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel/MarginContainer/VBoxContainer/ButtonsBox"]
+[node name="LeaveButton" type="Button" parent="CanvasLayer/VBoxContainer/UIContainer/LobbyPanel/MarginContainer/VBoxContainer/ButtonsBox" unique_id=1790984622]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 text = "Leave Lobby"
 
-[node name="SettingsPanel" type="PanelContainer" parent="CanvasLayer/VBoxContainer/UIContainer"]
+[node name="SettingsPanel" type="PanelContainer" parent="CanvasLayer/VBoxContainer/UIContainer" unique_id=1211721566]
 visible = false
 custom_minimum_size = Vector2(400, 240)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel" unique_id=1326982135]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer" unique_id=880648656]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="SettingsTitle" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer"]
+[node name="SettingsTitle" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer" unique_id=2018183002]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.75, 1, 1)
 theme_override_font_sizes/font_size = 16
 text = "SETTINGS"
 horizontal_alignment = 1
 
-[node name="ResolutionBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer"]
+[node name="ResolutionBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer" unique_id=2117522022]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer/ResolutionBox"]
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer/ResolutionBox" unique_id=261540873]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Resolution:"
 
-[node name="ResolutionBtn" type="OptionButton" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer/ResolutionBox"]
+[node name="ResolutionBtn" type="OptionButton" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer/ResolutionBox" unique_id=1447985931]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_input")
 
-[node name="FullscreenBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer"]
+[node name="FullscreenBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer" unique_id=887746987]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer/FullscreenBox"]
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer/FullscreenBox" unique_id=225934540]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Fullscreen:"
 
-[node name="FullscreenCheck" type="CheckBox" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer/FullscreenBox"]
+[node name="FullscreenCheck" type="CheckBox" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer/FullscreenBox" unique_id=104151304]
 layout_mode = 2
 
-[node name="VolumeBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer"]
+[node name="VolumeBox" type="HBoxContainer" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer" unique_id=2071359679]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer/VolumeBox"]
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer/VolumeBox" unique_id=944757102]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "Master Vol:"
 
-[node name="VolumeSlider" type="HSlider" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer/VolumeBox"]
+[node name="VolumeSlider" type="HSlider" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer/VolumeBox" unique_id=1349544078]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -436,7 +435,7 @@ max_value = 1.0
 step = 0.05
 value = 0.8
 
-[node name="SettingsBackButton" type="Button" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer"]
+[node name="SettingsBackButton" type="Button" parent="CanvasLayer/VBoxContainer/UIContainer/SettingsPanel/MarginContainer/VBoxContainer" unique_id=196346936]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
