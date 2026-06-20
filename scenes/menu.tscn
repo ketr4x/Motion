@@ -6,7 +6,7 @@
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_ouk20"]
 
-[sub_resource type="LabelSettings" id="LabelSettings_vjb58"]
+[sub_resource type="CanvasTexture" id="CanvasTexture_nm2nm"]
 
 [node name="menu" type="Node2D" unique_id=150216082]
 script = ExtResource("1_con2f")
@@ -16,15 +16,6 @@ position = Vector2(7.7500153, -210.25)
 scale = Vector2(439.5, 189.49998)
 texture = SubResource("CanvasTexture_ouk20")
 script = ExtResource("1_yqeox")
-
-[node name="Label" type="Label" parent="titlecard" unique_id=669143373]
-offset_left = -0.2804323
-offset_top = 0.8773088
-offset_right = 71.71957
-offset_bottom = 49.877308
-text = "blebleblu
-"
-label_settings = SubResource("LabelSettings_vjb58")
 
 [node name="titletext" type="Label" parent="." unique_id=1704788813]
 offset_left = -211.5
@@ -39,3 +30,8 @@ vertical_alignment = 1
 script = ExtResource("3_con2f")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1823212847]
+
+[node name="boat" type="Sprite2D" parent="." unique_id=2005284463]
+position = Vector2(0.5000076, 1.0223367)
+scale = Vector2(175, 88.044685)
+texture = SubResource("CanvasTexture_nm2nm")
