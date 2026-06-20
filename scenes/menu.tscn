@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://cppfb3dyhpkq4"]
 
-[ext_resource type="Script" uid="uid://bvjfwcsgu5axn" path="res://scenes/menu.gd" id="1_con2f"]
+[ext_resource type="Script" uid="uid://bvjfwcsgu5axn" path="res://scripts/menu.gd" id="1_con2f"]
 [ext_resource type="Script" uid="uid://crps83slc4kxv" path="res://scripts/titlecard.gd" id="1_yqeox"]
-[ext_resource type="Script" uid="uid://cqqdvauxbq7xp" path="res://scenes/titletext.gd" id="2_vjb58"]
+[ext_resource type="Script" uid="uid://cqqdvauxbq7xp" path="res://scripts/titletext.gd" id="3_con2f"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_ouk20"]
 
@@ -36,6 +36,6 @@ theme_override_font_sizes/font_size = 48
 text = "The Game Title"
 horizontal_alignment = 1
 vertical_alignment = 1
-script = ExtResource("2_vjb58")
+script = ExtResource("3_con2f")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1823212847]
