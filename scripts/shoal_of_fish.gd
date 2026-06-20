@@ -33,7 +33,7 @@ func _process(delta: float) -> void:
 			queue_free()
 	queue_redraw()
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	for body in get_overlapping_bodies():
 		if body.is_multiplayer_authority() and body.has_method("recharge_oxygen") and not body.is_dead:
 			body.velocity.y = -push_force

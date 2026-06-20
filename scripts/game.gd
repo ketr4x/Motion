@@ -48,6 +48,26 @@ func setup_hud() -> void:
 	oxygen_bar_fill = oxygen_bar.get_theme_stylebox("fill") as StyleBoxFlat
 
 func _process(_delta: float) -> void:
+	if multiplayer.is_server():
+		var all_doomed = true
+		var player_nodes = []
+		for peer_id in MultiplayerManager.players:
+			var p_node = get_node_or_null(str(peer_id))
+			if p_node:
+				player_nodes.append(p_node)
+				if not (p_node.is_dead or p_node.is_suffocating):
+					all_doomed = false
+					break
+		if player_nodes.size() > 1 and all_doomed:
+			var any_suffocating = false
+			for p in player_nodes:
+				if p.is_suffocating:
+					any_suffocating = true
+					break
+			if any_suffocating:
+				print("Game: All players are suffocating or dead. Game Over!")
+				transition_to_death.rpc()
+
 	if local_player == null:
 		var peer_id = multiplayer.get_unique_id()
 		var player_node = get_node_or_null(str(peer_id))
