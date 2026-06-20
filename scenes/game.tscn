@@ -1,34 +1,24 @@
 [gd_scene format=3 uid="uid://crygau4xdeumf"]
 
-[ext_resource type="Script" uid="uid://bjdw6uvxg01lu" path="res://scripts/character_body_2d.gd" id="1_80nbo"]
 [ext_resource type="Script" uid="uid://da3qj5xlh86ye" path="res://scripts/game.gd" id="1_e2o6t"]
 
-[sub_resource type="CanvasTexture" id="CanvasTexture_feb5d"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_fc0e3"]
-
-[sub_resource type="CanvasTexture" id="CanvasTexture_7jktm"]
+[sub_resource type="CanvasTexture" id="CanvasTexture_bg"]
 
 [node name="Game" type="Node2D" unique_id=1168081893]
 script = ExtResource("1_e2o6t")
 
-[node name="CharacterBody2D" type="CharacterBody2D" parent="." unique_id=1075508254]
-script = ExtResource("1_80nbo")
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://scenes/player.tscn")
+spawn_path = NodePath("..")
 
-[node name="Camera2D" type="Camera2D" parent="CharacterBody2D" unique_id=1743585990 groups=["camera"]]
+[node name="SpawnPoint1" type="Node2D" parent="."]
+position = Vector2(-50, 0)
 
-[node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D" unique_id=24952418]
-scale = Vector2(20, 20.000002)
-texture = SubResource("CanvasTexture_feb5d")
+[node name="SpawnPoint2" type="Node2D" parent="."]
+position = Vector2(50, 0)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D" unique_id=567997664]
-shape = SubResource("RectangleShape2D_fc0e3")
-
-[node name="test;-)" type="Sprite2D" parent="." unique_id=1103460137]
-position = Vector2(32.635582, 6.910198)
-texture = SubResource("CanvasTexture_7jktm")
-
-[node name="test;-)" type="Sprite2D" parent="test;-)" unique_id=1824143797]
-position = Vector2(25.25, 45.25)
-scale = Vector2(15.771164, 77.6796)
-texture = SubResource("CanvasTexture_7jktm")
+[node name="OceanBG" type="Sprite2D" parent="."]
+self_modulate = Color(0.02, 0.08, 0.18, 1)
+z_index = -10
+scale = Vector2(2000, 4000)
+texture = SubResource("CanvasTexture_bg")
