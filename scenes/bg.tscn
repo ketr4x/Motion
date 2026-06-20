@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://e1e3pxmxrmhg"]
+
+[ext_resource type="Texture2D" uid="uid://b3vf4tr45nqa0" path="res://assets/BG.png" id="1_anprf"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dpp0m"]
+atlas = ExtResource("1_anprf")
+region = Rect2(320, 0, 320, 320)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_gnuql"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dpp0m")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qd2e1"]
+atlas = ExtResource("1_anprf")
+region = Rect2(320, 320, 320, 320)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ejovc"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qd2e1")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5vsr6"]
+atlas = ExtResource("1_anprf")
+region = Rect2(320, 640, 320, 320)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_f6kv7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5vsr6")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w68nc"]
+atlas = ExtResource("1_anprf")
+region = Rect2(320, 960, 320, 320)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_gxjgp"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w68nc")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="Far" type="AnimatedSprite2D" unique_id=1809727048]
+position = Vector2(160, 160)
+sprite_frames = SubResource("SpriteFrames_gnuql")
+
+[node name="Far1" type="AnimatedSprite2D" parent="." unique_id=452035863]
+sprite_frames = SubResource("SpriteFrames_ejovc")
+
+[node name="Far2" type="AnimatedSprite2D" parent="Far1" unique_id=791588256]
+sprite_frames = SubResource("SpriteFrames_f6kv7")
+
+[node name="Sprite2D" type="AnimatedSprite2D" parent="Far1/Far2" unique_id=477465929]
+sprite_frames = SubResource("SpriteFrames_gxjgp")
