@@ -15,6 +15,10 @@ var is_suffocating: bool = false
 var suffocate_time_left: float = 5.0
 var original_color: Color = Color.WHITE
 
+var is_stunned: bool = false
+var stun_time_left: float = 0.0
+@export var stun_oxygen_depletion_multiplier: float = 3.0
+
 @export var dash_speed: float = 380.0
 @export var dash_duration: float = 0.22
 @export var dash_cooldown: float = 0.6
@@ -62,6 +66,11 @@ func _physics_process(delta: float) -> void:
 			die()
 			return
 
+	if is_stunned:
+		stun_time_left -= delta
+		if stun_time_left <= 0.0:
+			is_stunned = false
+
 	if dash_cooldown_timer > 0.0:
 		dash_cooldown_timer -= delta
 
@@ -78,22 +87,23 @@ func _physics_process(delta: float) -> void:
 
 	var input_dir = Vector2.ZERO
 	
-	if Input.is_action_pressed("left") or Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
-		input_dir.x = -1
-	if Input.is_action_pressed("right") or Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
-		input_dir.x = 1
-	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
-		input_dir.y = -1
-	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
-		input_dir.y = 1
-		
-	input_dir = input_dir.normalized()
+	if not is_stunned:
+		if Input.is_action_pressed("left") or Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+			input_dir.x = -1
+		if Input.is_action_pressed("right") or Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+			input_dir.x = 1
+		if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
+			input_dir.y = -1
+		if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
+			input_dir.y = 1
+			
+		input_dir = input_dir.normalized()
 
 	var is_shift_pressed = Input.is_key_pressed(KEY_SHIFT)
 	var just_pressed_shift = is_shift_pressed and not was_shift_pressed
 	was_shift_pressed = is_shift_pressed
 	
-	if just_pressed_shift and dash_cooldown_timer <= 0.0:
+	if just_pressed_shift and dash_cooldown_timer <= 0.0 and not is_stunned:
 		var d_dir = input_dir
 		if d_dir == Vector2.ZERO:
 			d_dir = Vector2.LEFT if sprite.flip_h else Vector2.RIGHT
@@ -139,7 +149,10 @@ func _physics_process(delta: float) -> void:
 					teammate.receive_shared_oxygen.rpc_id(other_peer_id, 30.0, multiplayer.get_unique_id())
 
 	if is_multiplayer_authority() and oxygen > 0:
-		oxygen -= depletion_rate * delta
+		var current_depletion = depletion_rate
+		if is_stunned:
+			current_depletion *= stun_oxygen_depletion_multiplier
+		oxygen -= current_depletion * delta
 		if oxygen <= 0:
 			oxygen = 0
 			start_suffocating()
@@ -177,6 +190,8 @@ func respawn(pos: Vector2) -> void:
 	oxygen = max_oxygen
 	is_suffocating = false
 	is_dashing = false
+	is_stunned = false
+	stun_time_left = 0.0
 	suffocate_time_left = 5.0
 	dash_timer = 0.0
 	dash_cooldown_timer = 0.0
@@ -208,6 +223,9 @@ func _process(delta: float) -> void:
 	if is_suffocating and not is_dead:
 		var pulse = (sin(Time.get_ticks_msec() * 0.015) + 1.0) * 0.5
 		sprite.self_modulate = original_color.lerp(Color(0.9, 0.1, 0.1), pulse)
+	elif is_stunned and not is_dead:
+		var pulse = (sin(Time.get_ticks_msec() * 0.04) + 1.0) * 0.5
+		sprite.self_modulate = original_color.lerp(Color(1.0, 1.0, 0.2), pulse)
 	else:
 		sprite.self_modulate = original_color
 
@@ -251,3 +269,13 @@ func receive_shared_oxygen(amount: float, giver_id: int) -> void:
 func deduct_oxygen(amount: float) -> void:
 	if is_multiplayer_authority():
 		oxygen = max(0.0, oxygen - amount)
+
+@rpc("any_peer", "call_local", "reliable")
+func shock(duration: float) -> void:
+	if is_dead:
+		return
+	is_stunned = true
+	stun_time_left = max(stun_time_left, duration)
+	is_dashing = false
+	velocity = Vector2.ZERO
+	print(name, " was shocked!")

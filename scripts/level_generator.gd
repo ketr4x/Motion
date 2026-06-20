@@ -1,6 +1,7 @@
 extends Node2D
 
 @export var spike_scene: PackedScene = preload("res://scenes/spike.tscn")
+@export var jellyfish_scene: PackedScene = preload("res://scenes/jellyfish.tscn")
 @export var oxygen_spot_scene: PackedScene = preload("res://scenes/oxygen_spot.tscn")
 
 @export var start_depth: float = 300.0
@@ -35,10 +36,16 @@ func generate_level(p_seed: int) -> void:
 			
 			if not too_close:
 				spawned_x_positions.append(obstacle_x)
-				var spike = spike_scene.instantiate()
-				spike.position = Vector2(obstacle_x, current_depth)
-				spike.name = "Spike_" + str(int(current_depth)) + "_" + str(i)
-				get_parent().add_child(spike)
+				var obstacle
+				if rng.randf() < 0.4:
+					obstacle = jellyfish_scene.instantiate()
+					obstacle.name = "Jellyfish_" + str(int(current_depth)) + "_" + str(i)
+				else:
+					obstacle = spike_scene.instantiate()
+					obstacle.name = "Spike_" + str(int(current_depth)) + "_" + str(i)
+				
+				obstacle.position = Vector2(obstacle_x, current_depth)
+				get_parent().add_child(obstacle)
 		
 		oxygen_spawn_counter += 1
 		if oxygen_spawn_counter >= 3:
