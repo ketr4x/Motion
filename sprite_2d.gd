@@ -1,13 +1,12 @@
-extends Node2D
-@onready var camera = get_tree().get_first_node_in_group("camera")
+extends Sprite2D
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	camera.get_node("camera")
-	get_tree().change_scene_to_file("res://menu.tscn")
 	pass # Replace with function body.
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
+	modulate.a -= 0.01
 	pass
