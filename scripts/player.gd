@@ -11,6 +11,17 @@ var friction: float = 0.15
 @export var horizontal_boundary: float = 300.0
 var is_dead: bool = false
 
+@export var dash_speed: float = 380.0
+@export var dash_duration: float = 0.22
+@export var dash_cooldown: float = 0.6
+@export var dash_oxygen_cost: float = 12.0
+
+var is_dashing: bool = false
+var dash_timer: float = 0.0
+var dash_cooldown_timer: float = 0.0
+var dash_dir: Vector2 = Vector2.ZERO
+var was_shift_pressed: bool = false
+
 @onready var camera: Camera2D = $Camera2D
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -36,9 +47,21 @@ func _physics_process(delta: float) -> void:
 		return
 
 	if not is_multiplayer_authority():
-		move_and_slide()
-		position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
 		return
+
+	if dash_cooldown_timer > 0.0:
+		dash_cooldown_timer -= delta
+
+	if is_dashing:
+		dash_timer -= delta
+		if dash_timer <= 0.0:
+			is_dashing = false
+			velocity = dash_dir * speed
+		else:
+			velocity = dash_dir * dash_speed
+			move_and_slide()
+			position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
+			return
 
 	var input_dir = Vector2.ZERO
 	
@@ -52,6 +75,30 @@ func _physics_process(delta: float) -> void:
 		input_dir.y = 1
 		
 	input_dir = input_dir.normalized()
+
+	var is_shift_pressed = Input.is_key_pressed(KEY_SHIFT)
+	var just_pressed_shift = is_shift_pressed and not was_shift_pressed
+	was_shift_pressed = is_shift_pressed
+	
+	if just_pressed_shift and dash_cooldown_timer <= 0.0:
+		var d_dir = input_dir
+		if d_dir == Vector2.ZERO:
+			d_dir = Vector2.LEFT if sprite.flip_h else Vector2.RIGHT
+		
+		if oxygen > 0.0:
+			oxygen = max(0.0, oxygen - dash_oxygen_cost)
+			is_dashing = true
+			dash_timer = dash_duration
+			dash_cooldown_timer = dash_cooldown
+			dash_dir = d_dir
+			velocity = dash_dir * dash_speed
+			
+			move_and_slide()
+			position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
+			
+			if oxygen <= 0.0:
+				die()
+			return
 	
 	if input_dir != Vector2.ZERO:
 		velocity = velocity.lerp(input_dir * speed, 0.1)
@@ -112,6 +159,14 @@ func _process(delta: float) -> void:
 			if survivor:
 				camera.global_position.x = 0
 				camera.global_position.y = lerp(camera.global_position.y, survivor.global_position.y, 5.0 * delta)
+				
+	if velocity.length() > speed * 1.3 and not is_dead:
+		if abs(velocity.x) > abs(velocity.y):
+			sprite.scale = Vector2(26.0, 15.0)
+		else:
+			sprite.scale = Vector2(15.0, 26.0)
+	else:
+		sprite.scale = Vector2(20.0, 20.0)
 
 func get_survivor() -> CharacterBody2D:
 	var parent = get_parent()
