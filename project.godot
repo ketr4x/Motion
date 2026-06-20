@@ -13,12 +13,14 @@ config_version=5
 config/name="Motion"
 run/main_scene="uid://crygau4xdeumf"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+boot_splash/bg_color=Color(0.24705882, 0.3764706, 0.92941177, 1)
 config/icon="res://icon.svg"
 
 [display]
 
-window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+window/size/mode=3
+window/size/resizable=false
+window/stretch/mode="viewport"
 
 [editor]
 
