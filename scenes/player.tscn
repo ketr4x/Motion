@@ -1,11 +1,10 @@
 [gd_scene format=3 uid="uid://df5s7hsk8vswp"]
 
-[ext_resource type="Script" uid="uid://cv1dne6qj7lpo" path="res://scripts/player.gd" id="1_player"]
+[ext_resource type="Script" uid="uid://dmed16r5227ji" path="res://scripts/player.gd" id="1_player"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_player"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
-size = Vector2(20, 20)
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_sync"]
 properties/0/path = NodePath(".:position")
@@ -25,15 +24,15 @@ properties/3/replication_mode = 2
 collision_layer = 2
 script = ExtResource("1_player")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=114310006]
 scale = Vector2(20, 20)
 texture = SubResource("CanvasTexture_player")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1003859765]
 shape = SubResource("RectangleShape2D_player")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1250376397]
 enabled = false
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1420428052]
 replication_config = SubResource("SceneReplicationConfig_sync")
