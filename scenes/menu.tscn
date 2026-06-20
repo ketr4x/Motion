@@ -1,21 +1,67 @@
 [gd_scene format=3 uid="uid://cppfb3dyhpkq4"]
 
 [ext_resource type="Script" uid="uid://bvjfwcsgu5axn" path="res://scripts/menu.gd" id="1_con2f"]
-[ext_resource type="Script" uid="uid://crps83slc4kxv" path="res://scripts/titlecard.gd" id="1_yqeox"]
-[ext_resource type="Script" uid="uid://cqqdvauxbq7xp" path="res://scripts/titletext.gd" id="3_con2f"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_ouk20"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_vjb58"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.04, 0.08, 0.15, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.16, 0.28, 0.85)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_left = 12
+corner_radius_bottom_right = 12
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 10
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.18, 0.35, 0.58, 0.6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_input"]
+bg_color = Color(0.05, 0.1, 0.18, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.15, 0.25, 0.4, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_normal"]
+bg_color = Color(0.12, 0.26, 0.45, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+bg_color = Color(0.18, 0.38, 0.65, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.65, 0.95, 1)
+
 [node name="menu" type="Node2D" unique_id=150216082]
 script = ExtResource("1_con2f")
 
 [node name="titlecard" type="Sprite2D" parent="." unique_id=1757877418]
+visible = false
 position = Vector2(7.7500153, -210.25)
 scale = Vector2(439.5, 189.49998)
 texture = SubResource("CanvasTexture_ouk20")
-script = ExtResource("1_yqeox")
 
 [node name="Label" type="Label" parent="titlecard" unique_id=669143373]
 offset_left = -0.2804323
@@ -27,6 +73,7 @@ text = "blebleblu
 label_settings = SubResource("LabelSettings_vjb58")
 
 [node name="titletext" type="Label" parent="." unique_id=1704788813]
+visible = false
 offset_left = -211.5
 offset_top = -302.0
 offset_right = 223.5
@@ -36,6 +83,144 @@ theme_override_font_sizes/font_size = 48
 text = "The Game Title"
 horizontal_alignment = 1
 vertical_alignment = 1
-script = ExtResource("3_con2f")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1823212847]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Background" type="Panel" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainPanel" type="PanelContainer" parent="CanvasLayer/CenterContainer"]
+custom_minimum_size = Vector2(400, 350)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/CenterContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.75, 1, 1)
+theme_override_font_sizes/font_size = 32
+text = "M O T I O N"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.7, 0.8, 1)
+theme_override_font_sizes/font_size = 14
+text = "Underwater Co-op Dive"
+horizontal_alignment = 1
+
+[node name="NameBox" type="VBoxContainer" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer/VBoxContainer/NameBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Diver Name:"
+
+[node name="NameInput" type="LineEdit" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer/VBoxContainer/NameBox"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_input")
+
+[node name="IPBox" type="VBoxContainer" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer/VBoxContainer/IPBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Server IP (For Joining):"
+
+[node name="IPInput" type="LineEdit" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer/VBoxContainer/IPBox"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_input")
+placeholder_text = "127.0.0.1 (Localhost)"
+
+[node name="ButtonsBox" type="VBoxContainer" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HostButton" type="Button" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer/VBoxContainer/ButtonsBox"]
+layout_mode = 2
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "Host Game"
+
+[node name="JoinButton" type="Button" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer/VBoxContainer/ButtonsBox"]
+layout_mode = 2
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "Join Game"
+
+[node name="StatusLabel" type="Label" parent="CanvasLayer/CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Status: Ready"
+horizontal_alignment = 1
+
+[node name="LobbyPanel" type="PanelContainer" parent="CanvasLayer/CenterContainer"]
+visible = false
+custom_minimum_size = Vector2(400, 350)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/CenterContainer/LobbyPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/CenterContainer/LobbyPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="LobbyTitle" type="Label" parent="CanvasLayer/CenterContainer/LobbyPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.75, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "DIVE LOBBY"
+horizontal_alignment = 1
+
+[node name="PlayerList" type="Label" parent="CanvasLayer/CenterContainer/LobbyPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Waiting for players...
+"
+horizontal_alignment = 1
+
+[node name="StartButton" type="Button" parent="CanvasLayer/CenterContainer/LobbyPanel/MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "Start Dive"
+
+[node name="LeaveButton" type="Button" parent="CanvasLayer/CenterContainer/LobbyPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "Leave Lobby"
