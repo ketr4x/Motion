@@ -5,6 +5,11 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_shoal"]
 size = Vector2(300, 120)
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_shoal"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+
 [node name="ShoalOfFish" type="Area2D"]
 collision_layer = 4
 collision_mask = 2
@@ -12,3 +17,6 @@ script = ExtResource("1_shoal")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_shoal")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_shoal")
