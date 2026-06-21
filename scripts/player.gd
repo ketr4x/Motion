@@ -242,6 +242,7 @@ func _physics_process(delta: float) -> void:
 			velocity = old_velocity.bounce(collision.get_normal()) * 0.5
 			
 	position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
+	position.y = min(position.y, 3750.0)
 
 	var is_e_pressed = Input.is_key_pressed(KEY_E)
 	var just_pressed_e = is_e_pressed and not was_e_pressed
@@ -352,7 +353,7 @@ func _process(delta: float) -> void:
 				camera.global_position = Vector2(0, global_position.y)
 				camera.global_position.y = lerp(camera.global_position.y, survivor.global_position.y, 5.0 * delta)
 		
-		var lookahead = velocity * 0.12
+		var lookahead = Vector2(0, velocity.y * 0.12)
 		if shake_amount > 0.0:
 			shake_amount = max(0.0, shake_amount - shake_decay * delta)
 			var shake_offset = Vector2(
@@ -391,14 +392,11 @@ func _process(delta: float) -> void:
 		sprite.flip_h = false
 
 		if bubble_particles:
-			bubble_particles.emitting = true
 			if is_dashing or is_launched or spawn_intro_timer > 0.0:
-				bubble_particles.amount = 12
-				bubble_particles.lifetime = 0.8
-				bubble_particles.speed_scale = 1.3
+				bubble_particles.emitting = true
+				bubble_particles.speed_scale = 1.5
 			elif velocity.length() > 10.0:
-				bubble_particles.amount = 6
-				bubble_particles.lifetime = 1.0
+				bubble_particles.emitting = true
 				bubble_particles.speed_scale = 1.0
 			else:
 				bubble_particles.emitting = false
