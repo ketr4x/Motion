@@ -13,6 +13,9 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -42,7 +45,7 @@ jobs:
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3
-        if: ${{ secrets.NETLIFY_AUTH_TOKEN != '' && secrets.NETLIFY_SITE_ID != '' }}
+        if: ${{ env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != '' }}
         with:
           publish-dir: './build/web'
           production-deploy: ${{ github.ref == 'refs/heads/main' }}
@@ -50,9 +53,6 @@ jobs:
           enable-pull-request-comment: true
           overwrites-pull-request-comment: true
           deploy-message: "Deploy from GitHub Actions (Commit: ${{ github.sha }})"
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
       - name: Update Latest GitHub Release (Main Branch Only)
         uses: softprops/action-gh-release@v2
