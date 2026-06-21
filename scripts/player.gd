@@ -3,9 +3,9 @@ extends CharacterBody2D
 @export var max_oxygen: float = 100.0
 @export var depletion_rate: float = 2.0
 
-@export var base_speed: float = 180.0
-@export var acceleration: float = 1200.0
-@export var water_friction: float = 800.0
+@export var base_speed: float = 240.0
+@export var acceleration: float = 1600.0
+@export var water_friction: float = 700.0
 
 @export var oxygen: float = 100.0
 @export var camera_zoom: Vector2 = Vector2(2.5, 2.5)
@@ -31,6 +31,7 @@ var dash_cooldown_timer: float = 0.0
 var dash_dir: Vector2 = Vector2.ZERO
 var was_shift_pressed: bool = false
 var was_e_pressed: bool = false
+var last_look_dir: Vector2 = Vector2(0, 1)
 
 var is_launched: bool = false
 var launch_timer: float = 0.0
@@ -47,6 +48,7 @@ var spawn_intro_timer: float = 1.0
 
 var shake_amount: float = 0.0
 var shake_decay: float = 0.0
+var flash_timer: float = 0.0
 
 func _enter_tree() -> void:
 	var peer_id = name.to_int()
@@ -110,39 +112,49 @@ func _physics_process(delta: float) -> void:
 	if dash_cooldown_timer > 0.0:
 		dash_cooldown_timer -= delta
 
+	var input_dir = Vector2.ZERO
+	if Input.is_action_pressed("left") or Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+		input_dir.x = -1
+	if Input.is_action_pressed("right") or Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+		input_dir.x = 1
+	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
+		input_dir.y = -1
+	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
+		input_dir.y = 1
+	input_dir = input_dir.normalized()
+	
+	if input_dir != Vector2.ZERO:
+		last_look_dir = input_dir
+
 	if is_dashing:
 		dash_timer -= delta
 		if dash_timer <= 0.0:
 			is_dashing = false
-			velocity = dash_dir * base_speed
 		else:
-			velocity = dash_dir * dash_speed
+			velocity = dash_dir * (dash_speed * 1.8)
+			var old_dash_vel = velocity
 			move_and_slide()
+			
+			if get_slide_collision_count() > 0:
+				var coll = get_slide_collision(0)
+				if old_dash_vel.normalized().dot(-coll.get_normal()) > 0.5:
+					flash_white(0.15)
+					shake_camera(10.0, 0.25)
+					is_dashing = false
+					dash_timer = 0.0
+					velocity = old_dash_vel.bounce(coll.get_normal()) * 0.6
+					
 			position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
 			
-			var teammate = get_survivor()
-			if teammate and not teammate.is_dead:
-				var dist = global_position.distance_to(teammate.global_position)
-				if dist < 65.0:
-					teammate.apply_slingshot_launch.rpc(dash_dir * (dash_speed * 1.5))
+			var teammate_dash = get_survivor()
+			if teammate_dash and not teammate_dash.is_dead:
+				var dist_dash = global_position.distance_to(teammate_dash.global_position)
+				if dist_dash < 65.0:
+					teammate_dash.apply_slingshot_launch.rpc(dash_dir * (dash_speed * 1.5))
 					is_dashing = false
 					dash_timer = 0.0
 					velocity = -dash_dir * 120.0
 			return
-
-	var input_dir = Vector2.ZERO
-	
-	if not is_stunned:
-		if Input.is_action_pressed("left") or Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
-			input_dir.x = -1
-		if Input.is_action_pressed("right") or Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
-			input_dir.x = 1
-		if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
-			input_dir.y = -1
-		if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
-			input_dir.y = 1
-			
-		input_dir = input_dir.normalized()
 
 	var is_shift_pressed = Input.is_key_pressed(KEY_SHIFT)
 	var just_pressed_shift = is_shift_pressed and not was_shift_pressed
@@ -159,7 +171,9 @@ func _physics_process(delta: float) -> void:
 			dash_timer = dash_duration
 			dash_cooldown_timer = dash_cooldown
 			dash_dir = d_dir
-			velocity = dash_dir * dash_speed
+			velocity = dash_dir * dash_speed * 1.8
+			shake_camera(8.0, 0.25)
+			flash_white(0.1)
 			
 			move_and_slide()
 			position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
@@ -169,14 +183,42 @@ func _physics_process(delta: float) -> void:
 				start_suffocating()
 			return
 	
+	var is_solo = (multiplayer.get_peers().size() == 0)
+	var slipstream_boost = 1.0
+	var teammate_slip = get_survivor()
+	if teammate_slip and not teammate_slip.is_dead:
+		var dist_slip = global_position.distance_to(teammate_slip.global_position)
+		if dist_slip < 120.0:
+			slipstream_boost = 1.4
+	
 	var current_speed = base_speed * 0.4 if is_suffocating else base_speed
-	var target_velocity = input_dir * current_speed
+	current_speed *= slipstream_boost
+	
+	if is_stunned:
+		current_speed *= 0.3 # Smoła stuna
+	
 	if input_dir != Vector2.ZERO:
-		velocity = velocity.move_toward(target_velocity, acceleration * delta)
+		if velocity.length() > current_speed:
+			var steer_strength = 8.0 * delta
+			var target_vel = input_dir * velocity.length()
+			velocity = velocity.lerp(target_vel, steer_strength)
+			velocity = velocity.move_toward(input_dir * current_speed, water_friction * 0.6 * delta)
+		else:
+			velocity = velocity.move_toward(input_dir * current_speed, acceleration * delta)
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, water_friction * delta)
 		
+	var old_velocity = velocity
 	move_and_slide()
+	
+	if get_slide_collision_count() > 0:
+		var collision = get_slide_collision(0)
+		var hit_dot = old_velocity.normalized().dot(-collision.get_normal())
+		if hit_dot > 0.6 and old_velocity.length() > 250.0:
+			flash_white(0.15)
+			shake_camera(8.0, 0.2)
+			velocity = old_velocity.bounce(collision.get_normal()) * 0.5
+			
 	position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
 
 	var is_e_pressed = Input.is_key_pressed(KEY_E)
@@ -184,25 +226,31 @@ func _physics_process(delta: float) -> void:
 	was_e_pressed = is_e_pressed
 	
 	if just_pressed_e and not is_suffocating and oxygen > 40.0:
-		var teammate = get_survivor()
-		if teammate and teammate.is_suffocating:
-			var dist = global_position.distance_to(teammate.global_position)
-			if dist < 50.0:
-				var other_peer_id = teammate.name.to_int()
+		var teammate_oxy = get_survivor()
+		if teammate_oxy and teammate_oxy.is_suffocating:
+			var dist_oxy = global_position.distance_to(teammate_oxy.global_position)
+			if dist_oxy < 50.0:
+				var other_peer_id = teammate_oxy.name.to_int()
 				if other_peer_id > 0:
 					if multiplayer.has_multiplayer_peer():
-						teammate.receive_shared_oxygen.rpc_id(other_peer_id, 30.0, multiplayer.get_unique_id())
+						teammate_oxy.receive_shared_oxygen.rpc_id(other_peer_id, 30.0, multiplayer.get_unique_id())
 					else:
-						teammate.receive_shared_oxygen(30.0, 1)
+						teammate_oxy.receive_shared_oxygen(30.0, 1)
 
 	if is_multiplayer_authority() and oxygen > 0:
 		var current_depletion = depletion_rate
+		if is_solo:
+			current_depletion *= 0.3 # W solo zużycie tlenu jest dużo mniejsze
 		if is_stunned:
 			current_depletion *= stun_oxygen_depletion_multiplier
 		oxygen -= current_depletion * delta
 		if oxygen <= 0:
 			oxygen = 0
 			start_suffocating()
+
+func apply_bubble_boost(force: Vector2) -> void:
+	if not is_dead:
+		velocity += force
 
 func recharge_oxygen() -> void:
 	if not is_dead:
@@ -257,6 +305,9 @@ func shake_camera(intensity: float, duration: float) -> void:
 		shake_amount = intensity
 		shake_decay = intensity / duration
 
+func flash_white(duration: float) -> void:
+	flash_timer = max(flash_timer, duration)
+
 func _process(delta: float) -> void:
 	if is_launched:
 		launch_timer -= delta
@@ -272,29 +323,29 @@ func _process(delta: float) -> void:
 				camera.global_position.x = 0
 				camera.global_position.y = lerp(camera.global_position.y, survivor.global_position.y, 5.0 * delta)
 		
+		var lookahead = velocity * 0.12
 		if shake_amount > 0.0:
 			shake_amount = max(0.0, shake_amount - shake_decay * delta)
-			camera.offset = Vector2(
+			var shake_offset = Vector2(
 				randf_range(-shake_amount, shake_amount),
 				randf_range(-shake_amount, shake_amount)
 			)
+			camera.offset = camera.offset.lerp(shake_offset + lookahead, 16.0 * delta)
 		else:
-			camera.offset = Vector2.ZERO
+			camera.offset = camera.offset.lerp(lookahead, 10.0 * delta)
 				
 	var base_scale = Vector2(3.75, 3.75)
-	if velocity.length() > base_speed * 1.3 and not is_dead and not is_dashing and spawn_intro_timer <= 0.0:
-		if abs(velocity.x) > abs(velocity.y):
-			sprite.scale = base_scale * Vector2(1.3, 0.75)
-		else:
-			sprite.scale = base_scale * Vector2(0.75, 1.3)
-	else:
-		sprite.scale = base_scale
+	sprite.scale = base_scale
 
-	if is_suffocating and not is_dead:
-		var pulse = (sin(Time.get_ticks_msec() * 0.015) + 1.0) * 0.5
+	var pulse: float = 0.0
+	if flash_timer > 0.0:
+		flash_timer -= delta
+		sprite.self_modulate = Color(2.5, 2.5, 2.5, 1.0)
+	elif is_suffocating and not is_dead:
+		pulse = (sin(Time.get_ticks_msec() * 0.015) + 1.0) * 0.5
 		sprite.self_modulate = original_color.lerp(Color(0.9, 0.1, 0.1), pulse)
 	elif is_stunned and not is_dead:
-		var pulse = (sin(Time.get_ticks_msec() * 0.04) + 1.0) * 0.5
+		pulse = (sin(Time.get_ticks_msec() * 0.04) + 1.0) * 0.5
 		sprite.self_modulate = original_color.lerp(Color(1.0, 1.0, 0.2), pulse)
 	else:
 		sprite.self_modulate = original_color
@@ -304,29 +355,20 @@ func _process(delta: float) -> void:
 		if spawn_intro_timer > 0.0:
 			spawn_intro_timer -= delta
 			
-		# Flip handling
-		if velocity.x < -5.0:
-			sprite.flip_h = true
-		elif velocity.x > 5.0:
-			sprite.flip_h = false
-			
-		# Rotation handling (pitching in water)
-		var target_rotation = -PI/2 if sprite.flip_h else PI/2
-		if not is_dashing and not is_launched and spawn_intro_timer <= 0.0 and velocity.length() > 10.0:
-			var speed_ratio = clamp(velocity.y / base_speed, -1.0, 1.0)
-			var pitch = speed_ratio * 0.6
-			target_rotation += pitch * (-1.0 if sprite.flip_h else 1.0)
-			
-		sprite.rotation = lerp_angle(sprite.rotation, target_rotation, 6.0 * delta)
+		if last_look_dir != Vector2.ZERO:
+			var target_rotation = last_look_dir.angle() + PI/2
+			sprite.rotation = lerp_angle(sprite.rotation, target_rotation, 12.0 * delta)
+		
+		sprite.flip_h = false
 
 		if bubble_particles:
 			bubble_particles.emitting = true
 			if is_dashing or is_launched or spawn_intro_timer > 0.0:
-				bubble_particles.amount = 24
-				bubble_particles.lifetime = 0.4
-				bubble_particles.speed_scale = 2.0
+				bubble_particles.amount = 30
+				bubble_particles.lifetime = 0.5
+				bubble_particles.speed_scale = 1.5
 			elif velocity.length() > 10.0:
-				bubble_particles.amount = 12
+				bubble_particles.amount = 16
 				bubble_particles.lifetime = 0.6
 				bubble_particles.speed_scale = 1.0
 			else:
@@ -336,29 +378,25 @@ func _process(delta: float) -> void:
 			if velocity.length() > 80.0 and not is_dead:
 				wind_particles.emitting = true
 				var move_dir = velocity.normalized()
-				wind_particles.direction = -move_dir
-				wind_particles.rotation = move_dir.angle() - PI/2
+				if move_dir != Vector2.ZERO:
+					wind_particles.direction = -move_dir
+					wind_particles.rotation = move_dir.angle() - PI/2
 			else:
 				wind_particles.emitting = false
 
+		var frame_idx: int = 0
 		if is_dashing or is_launched:
-			var t = 0.0
-			if is_dashing:
-				t = 1.0 - (dash_timer / dash_duration)
-			elif is_launched:
-				t = 1.0 - (launch_timer / launch_duration_total)
-			# Burst ma najpewniej max 6-8 klatek, by omijac puste konce
-			var frame_idx = clampi(int(t * 7.0), 0, 6)
-			sprite.frame_coords = Vector2i(frame_idx, 3)
+			frame_idx = int(anim_time * 24.0) % 12
+			sprite.frame_coords = Vector2i(frame_idx, 1)
 		elif is_stunned or is_suffocating:
-			var frame_idx = int(anim_time * 8.0) % 4
+			frame_idx = int(anim_time * 8.0) % 4
 			sprite.frame_coords = Vector2i(frame_idx, 0)
 		elif velocity.length() > 10.0:
 			var speed_mult = 0.8 if is_suffocating else 1.0
-			var frame_idx = int(anim_time * 12.0 * speed_mult) % 12
+			frame_idx = int(anim_time * 12.0 * speed_mult) % 12
 			sprite.frame_coords = Vector2i(frame_idx, 1)
 		else:
-			var frame_idx = int(anim_time * 10.0) % 12
+			frame_idx = int(anim_time * 10.0) % 7
 			sprite.frame_coords = Vector2i(frame_idx, 2)
 	else:
 		if bubble_particles:
@@ -412,7 +450,6 @@ func shock(duration: float) -> void:
 	is_stunned = true
 	stun_time_left = max(stun_time_left, duration)
 	is_dashing = false
-	velocity = Vector2.ZERO
 	print(name, " was shocked!")
 
 @rpc("any_peer", "call_local", "reliable")

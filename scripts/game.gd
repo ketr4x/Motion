@@ -125,8 +125,8 @@ func _process(_delta: float) -> void:
 					break
 			if any_suffocating:
 				print("Game: All players are suffocating or dead. Game Over!")
-				var elapsed = Time.get_ticks_msec() - game_start_time
-				transition_to_death.rpc(elapsed)
+				var elapsed_doomed = Time.get_ticks_msec() - game_start_time
+				transition_to_death.rpc(elapsed_doomed)
 
 	if local_player == null:
 		var peer_id = multiplayer.get_unique_id() if multiplayer.has_multiplayer_peer() else 1
@@ -145,11 +145,11 @@ func _process(_delta: float) -> void:
 			var current_depth = local_player.position.y
 			if current_depth >= $LevelGenerator.end_depth:
 				game_ended = true
-				var elapsed = Time.get_ticks_msec() - game_start_time
+				var elapsed_end = Time.get_ticks_msec() - game_start_time
 				if multiplayer.has_multiplayer_peer():
-					win_game.rpc(elapsed)
+					win_game.rpc(elapsed_end)
 				else:
-					win_game(elapsed)
+					win_game(elapsed_end)
 		
 		if oxygen_bar:
 			oxygen_bar.value = local_player.oxygen
