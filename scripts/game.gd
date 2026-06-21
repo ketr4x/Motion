@@ -23,10 +23,12 @@ func _ready() -> void:
 		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 		if multiplayer.is_server():
 			$ShoalTimer.timeout.connect(_on_shoal_timer_timeout)
-			register_ready_peer(1)
+			MultiplayerManager.notify_game_ready(1)
+			for peer_id in MultiplayerManager.game_ready_peers:
+				register_ready_peer(peer_id)
 		else:
 			$ShoalTimer.stop()
-			notify_server_ready.rpc_id(1, multiplayer.get_unique_id())
+			MultiplayerManager.notify_game_ready.rpc_id(1, multiplayer.get_unique_id())
 	else:
 		$ShoalTimer.timeout.connect(_on_shoal_timer_timeout)
 		spawn_local_player_for_preview()
@@ -196,7 +198,8 @@ func win_game(final_time_ms: float) -> void:
 	MultiplayerManager.show_ending_screen = true
 	MultiplayerManager.ending_victory = true
 	
-	MultiplayerManager.leave_game()
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		MultiplayerManager.leave_game()
 	
 	call_deferred("_transition_to_menu")
 
@@ -212,6 +215,8 @@ func _transition_to_menu() -> void:
 	var tween = create_tween()
 	tween.tween_property(color_rect, "color:a", 1.0, 1.2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_QUAD)
 	await tween.finished
+	if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
+		MultiplayerManager.leave_game()
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 func player_died(peer_id: int) -> void:
@@ -268,10 +273,25 @@ func transition_to_death(final_time_ms: float) -> void:
 	MultiplayerManager.show_ending_screen = true
 	MultiplayerManager.ending_victory = false
 	
-	MultiplayerManager.leave_game()
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
+		MultiplayerManager.leave_game()
+	
 	call_deferred("_transition_to_death")
 
 func _transition_to_death() -> void:
+	var canvas = CanvasLayer.new()
+	canvas.layer = 100
+	add_child(canvas)
+	var color_rect = ColorRect.new()
+	color_rect.color = Color(0, 0, 0, 0)
+	color_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	canvas.add_child(color_rect)
+	
+	var tween = create_tween()
+	tween.tween_property(color_rect, "color:a", 1.0, 1.2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_QUAD)
+	await tween.finished
+	if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
+		MultiplayerManager.leave_game()
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 func _on_shoal_timer_timeout() -> void:
