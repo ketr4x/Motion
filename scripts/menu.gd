@@ -254,12 +254,29 @@ func _on_host_pressed() -> void:
 		pause_background()
 
 func _on_join_pressed() -> void:
+	if join_button.text == "Cancel":
+		MultiplayerManager.leave_game()
+		join_button.text = "Join"
+		host_button.disabled = false
+		settings_button.disabled = false
+		ip_input.editable = true
+		name_input.editable = true
+		status_label.text = "Status: Connection cancelled."
+		return
+
 	var name_text := name_input.text.strip_edges()
 	if name_text == "":
 		name_text = "Client"
 	var ip_text := ip_input.text.strip_edges()
 	if ip_text == "":
-		ip_text = "127.0.0.1"
+		status_label.text = "Status: Please enter a Room Code or IP address."
+		return
+
+	join_button.text = "Cancel"
+	host_button.disabled = true
+	settings_button.disabled = true
+	ip_input.editable = false
+	name_input.editable = false
 
 	MultiplayerManager.join_game(name_text, ip_text)
 
@@ -278,6 +295,13 @@ func _on_leave_pressed() -> void:
 	status_label.text = "Status: Disconnected"
 	resume_background()
 	_on_player_list_changed()
+	
+	# Reset join buttons/fields in case we were connecting or in a lobby
+	join_button.text = "Join"
+	host_button.disabled = false
+	settings_button.disabled = false
+	ip_input.editable = true
+	name_input.editable = true
 
 func _on_player_list_changed() -> void:
 	var list_text := "Players connected:\n"
@@ -340,6 +364,13 @@ func _on_connection_status(success: bool, message: String) -> void:
 		start_button.visible = false
 		resume_background()
 		_on_player_list_changed()
+		
+		# Reset buttons
+		join_button.text = "Join"
+		host_button.disabled = false
+		settings_button.disabled = false
+		ip_input.editable = true
+		name_input.editable = true
 
 func _on_settings_pressed() -> void:
 	ui_container.visible = false
