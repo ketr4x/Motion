@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://lv4muoupgwg1" path="res://scripts/level_generator.gd" id="2_lvlgen"]
 [ext_resource type="FontFile" uid="uid://bbekmcubtnhie" path="res://assets/dogica.otf" id="3_font"]
 [ext_resource type="Shader" uid="uid://cusbrj2v2qhh7" path="res://scripts/retro_crt.gdshader" id="7_crt_shader"]
-[ext_resource type="AudioStream" uid="uid://c6g7h8i9j0k1l" path="res://assets/death.wav" id="4_x9y0z"]
+[ext_resource type="AudioStream" uid="uid://dorb8glc751bi" path="res://assets/death.wav" id="4_x9y0z"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_bg"]
 

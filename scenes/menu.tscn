@@ -6,9 +6,9 @@
 [ext_resource type="Texture2D" uid="uid://c0y86tl605g6h" path="res://assets/LOGOMOTION.png" id="4_logo"]
 [ext_resource type="FontFile" uid="uid://bbekmcubtnhie" path="res://assets/dogica.otf" id="5_font"]
 [ext_resource type="Shader" uid="uid://cusbrj2v2qhh7" path="res://scripts/retro_crt.gdshader" id="6_shader"]
-[ext_resource type="AudioStream" uid="uid://cbp17b2p7u1u3" path="res://assets/waves.mp3" id="8_76s5w"]
-[ext_resource type="AudioStream" uid="uid://b3o4k2p4t7r5d" path="res://assets/wind.mp3" id="9_m1n2k"]
-[ext_resource type="AudioStream" uid="uid://dmh28n3y3a1a1" path="res://assets/splash.mp3" id="10_3u1u3"]
+[ext_resource type="AudioStream" uid="uid://ct34hpayogxgt" path="res://assets/waves.mp3" id="8_76s5w"]
+[ext_resource type="AudioStream" uid="uid://djy1licvjebu4" path="res://assets/wind.mp3" id="9_m1n2k"]
+[ext_resource type="AudioStream" uid="uid://bcsl8lafgltp7" path="res://assets/splash.mp3" id="10_3u1u3"]
 
 [sub_resource type="AtlasTexture" id="atlas_cloud_0"]
 atlas = ExtResource("3_clouds")
