@@ -1,13 +1,17 @@
 # Motion
-An underwater co-op game made in Godot
+An underwater speedruning co-op game made in Godot
 
 ## Installation
 Windows
 - Download a release from [Releases](https://github.com/ketr4x/Motion/releases)
-- soon
+- Unzip the archive
+- Run the .exe
 
 Web:
-- Play [here](https://google.com)
+- Play [here](https://motion-nexus.netlify.app/)
 
 ## Features
-- 
+- Online co-op
+- Fun gameplay
+- Leaderboards
+- Speedruning
