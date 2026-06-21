@@ -62,6 +62,7 @@ const LOGO_BOB_DURATION := 0.75
 @onready var leaderboard_list_label: Label = $CanvasLayer/LeaderboardPanel/VBox/LeaderboardList
 @onready var ending_title: Label = $CanvasLayer/EndingPanel/VBox/EndingTitle
 @onready var leaderboard_title: Label = $CanvasLayer/LeaderboardPanel/VBox/LeaderboardTitle
+@onready var lobby_title: Label = $CanvasLayer/LobbyPanel/VBox/LobbyTitle
 
 var dragging_ending_window := false
 var dragging_leaderboard_window := false
@@ -72,8 +73,9 @@ var reflections: Array[Sprite2D] = []
 var logo_flash_timer: Timer
 var is_background_paused := false
 
-var dragging_window := false
+var dragging_window_node: Control = null
 var drag_offset := Vector2.ZERO
+
 
 func _ready() -> void:
 	RenderingServer.set_default_clear_color(Color("#639BFF"))
@@ -84,6 +86,9 @@ func _ready() -> void:
 	_setup_networking()
 	_setup_settings()
 	_setup_ending()
+	
+
+
 
 func _process(delta: float) -> void:
 	_update_clouds(delta)
@@ -203,20 +208,20 @@ func _setup_ui() -> void:
 	team_input.text_changed.connect(_on_team_name_changed)
 	MultiplayerManager.team_name_changed.connect(_on_team_name_changed_from_manager)
 
-	window_title_bar.gui_input.connect(_on_title_bar_gui_input)
+	window_title_bar.gui_input.connect(_on_title_bar_gui_input.bind(ui_container))
 	min_btn.pressed.connect(_on_window_close_or_min)
 	close_btn.pressed.connect(_on_window_close_or_min)
 
-func _on_title_bar_gui_input(event: InputEvent) -> void:
+func _on_title_bar_gui_input(event: InputEvent, window: Control) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
-				dragging_window = true
-				drag_offset = event.global_position - ui_container.global_position
+				dragging_window_node = window
+				drag_offset = event.global_position - window.global_position
 			else:
-				dragging_window = false
-	elif event is InputEventMouseMotion and dragging_window:
-		ui_container.global_position = event.global_position - drag_offset
+				dragging_window_node = null
+	elif event is InputEventMouseMotion and dragging_window_node == window:
+		window.global_position = event.global_position - drag_offset
 
 func _on_window_close_or_min() -> void:
 	ui_container.visible = false
@@ -445,25 +450,56 @@ func _on_volume_changed(value: float) -> void:
 
 func _setup_ending() -> void:
 	ending_back_button.pressed.connect(_on_ending_back_pressed)
-	if ending_title:
-		ending_title.gui_input.connect(_on_ending_title_gui_input)
-	if leaderboard_title:
-		leaderboard_title.gui_input.connect(_on_leaderboard_title_gui_input)
 
-	for p in [[ending_panel, ending_title], [leaderboard_panel, leaderboard_title]]:
+
+	for p in [[ending_panel, ending_title], [leaderboard_panel, leaderboard_title], [lobby_panel, lobby_title]]:
 		var panel = p[0]
 		var title = p[1]
 		if title:
-			var btn = Button.new()
-			btn.text = "X"
-			btn.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-			btn.offset_left = -32
-			btn.offset_right = -4
-			btn.offset_top = 4
-			btn.offset_bottom = 32
-			btn.focus_mode = Control.FOCUS_NONE
-			btn.pressed.connect(func(): panel.hide())
-			title.add_child(btn)
+			var parent = title.get_parent()
+			var idx = title.get_index()
+			var new_title = PanelContainer.new()
+			new_title.add_theme_stylebox_override("panel", title.get_theme_stylebox("normal"))
+			
+			var hbox = HBoxContainer.new()
+			new_title.add_child(hbox)
+			
+			var lbl = Label.new()
+			lbl.text = title.text
+			lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			lbl.add_theme_font_size_override("font_size", 20)
+			lbl.add_theme_color_override("font_color", Color(1,1,1))
+			hbox.add_child(lbl)
+			
+			var m_btn = Button.new()
+			m_btn.text = "-"
+			m_btn.custom_minimum_size = Vector2(36, 0)
+			m_btn.add_theme_stylebox_override("normal", min_btn.get_theme_stylebox("normal"))
+			m_btn.add_theme_stylebox_override("hover", min_btn.get_theme_stylebox("hover"))
+			m_btn.add_theme_stylebox_override("pressed", min_btn.get_theme_stylebox("pressed"))
+			m_btn.add_theme_color_override("font_color", Color(0,0,0))
+			m_btn.add_theme_color_override("font_hover_color", Color(0,0,0))
+			m_btn.add_theme_color_override("font_pressed_color", Color(0,0,0))
+			m_btn.focus_mode = Control.FOCUS_NONE
+			
+			var c_btn = m_btn.duplicate()
+			c_btn.text = "X"
+			
+			hbox.add_child(m_btn)
+			hbox.add_child(c_btn)
+			
+			parent.add_child(new_title)
+			parent.move_child(new_title, idx)
+			title.queue_free()
+			
+			var close_func = func():
+				panel.visible = false
+				var timer = get_tree().create_timer(1.0)
+				timer.timeout.connect(func(): panel.visible = true)
+				
+			m_btn.pressed.connect(close_func)
+			c_btn.pressed.connect(close_func)
+			new_title.gui_input.connect(_on_title_bar_gui_input.bind(panel))
 
 	if MultiplayerManager.show_ending_screen:
 		MultiplayerManager.show_ending_screen = false

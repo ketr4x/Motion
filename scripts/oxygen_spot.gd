@@ -17,7 +17,7 @@ func _ready() -> void:
 	if has_node("Sprite2D"):
 		$Sprite2D.queue_free()
 	
-	for i in range(40):
+	for i in range(52):
 		var b = ColorRect.new()
 		b.custom_minimum_size = Vector2(3.75, 3.75)
 		b.size = Vector2(3.75, 3.75)
