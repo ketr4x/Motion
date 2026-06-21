@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://df5s7hsk8vswp"]
 
 [ext_resource type="Script" uid="uid://dmed16r5227ji" path="res://scripts/player.gd" id="1_player"]
-[ext_resource type="Texture2D" uid="uid://doi5cg0ipmj73" path="res://assets/gostekspritesheet.png" id="2_gostek_spritesheet"]
+[ext_resource type="Texture2D" path="res://assets/kaczka1.png" id="2_kaczka_spritesheet"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
 size = Vector2(60, 60)
@@ -33,18 +33,38 @@ script = ExtResource("1_player")
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=114310006]
 texture_filter = 1
 scale = Vector2(3.75, 3.75)
-texture = ExtResource("2_gostek_spritesheet")
-hframes = 20
-vframes = 3
+texture = ExtResource("2_kaczka_spritesheet")
+hframes = 12
+vframes = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1003859765]
 shape = SubResource("RectangleShape2D_player")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1250376397]
 enabled = false
+zoom = Vector2(2.5, 2.5)
+position_smoothing_enabled = true
+position_smoothing_speed = 3.5
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1420428052]
 replication_config = SubResource("SceneReplicationConfig_sync")
+
+[node name="WindParticles" type="CPUParticles2D" parent="."]
+unique_name_in_owner = true
+z_index = -1
+emitting = false
+amount = 40
+lifetime = 0.5
+emission_shape = 3
+emission_rect_extents = Vector2(40, 60)
+direction = Vector2(0, -1)
+spread = 0.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 150.0
+initial_velocity_max = 250.0
+scale_amount_min = 1.0
+scale_amount_max = 1.5
+color = Color(0.8, 0.9, 1, 0.15)
 
 [node name="BubbleParticles" type="CPUParticles2D" parent="."]
 unique_name_in_owner = true
