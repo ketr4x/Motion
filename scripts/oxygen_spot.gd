@@ -56,7 +56,7 @@ func _process(delta: float) -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	if is_active and body.is_multiplayer_authority() and body.has_method("recharge_oxygen"):
-		body.recharge_oxygen()
+		body.recharge_oxygen(100.0)
 		deactivate.rpc(body.name)
 
 @rpc("any_peer", "call_local", "reliable")

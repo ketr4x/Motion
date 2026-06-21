@@ -295,17 +295,27 @@ func apply_bubble_boost(force: Vector2) -> void:
 	if not is_dead:
 		velocity += force
 
-func recharge_oxygen(amount: float) -> void:
-	if not is_dead:
-		oxygen = min(max_oxygen, oxygen + amount)
-		if is_suffocating:
-			stop_suffocating()
-		
-		# Oxygen Tether: Share with nearby players
-		for p in get_tree().get_nodes_in_group("players"):
-			if p != self and not p.is_dead and not p.is_suffocating:
-				if global_position.distance_to(p.global_position) < 180.0:
-					p.oxygen = min(p.max_oxygen, p.oxygen + 50.0)
+@rpc("any_peer", "call_local", "reliable")
+func recharge_oxygen(amount: float = 100.0, share_with_others: bool = true) -> void:
+	if is_local_authority():
+		if not is_dead:
+			oxygen = min(max_oxygen, oxygen + amount)
+			if is_suffocating:
+				stop_suffocating()
+			
+			# Oxygen Tether: Share with nearby players
+			if share_with_others:
+				for p in get_tree().get_nodes_in_group("players"):
+					if p != self and not p.is_dead and not p.is_suffocating:
+						if global_position.distance_to(p.global_position) < 180.0:
+							var other_peer_id = p.name.to_int()
+							if other_peer_id > 0:
+								if multiplayer.has_multiplayer_peer():
+									p.recharge_oxygen.rpc_id(other_peer_id, 50.0, false)
+								else:
+									p.recharge_oxygen(50.0, false)
+							else:
+								p.recharge_oxygen(50.0, false)
 
 func die() -> void:
 	if not multiplayer.has_multiplayer_peer():
