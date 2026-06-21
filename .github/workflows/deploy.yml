@@ -20,6 +20,33 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
+      - name: Create Talo Config
+        run: |
+          mkdir -p addons/talo
+          cat << 'EOF' > addons/talo/settings.cfg
+          access_key="${{ secrets.TALO_ACCESS_KEY }}"
+          api_url="https://api.trytalo.com"
+          socket_url="wss://api.trytalo.com"
+          auto_connect_socket=true
+          handle_tree_quit=true
+          cache_player_on_identify=true
+          debounce_timer_seconds=1.0
+
+          [continuity]
+
+          enabled=true
+
+          [player_auth]
+
+          auto_start_session=true
+
+          [verification]
+
+          enabled=false
+          key_version=""
+          key_value=""
+          EOF
+
       - name: Setup Godot Engine
         uses: chickensoft-games/setup-godot@v2
         with:
