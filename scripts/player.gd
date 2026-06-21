@@ -25,6 +25,7 @@ var stun_time_left: float = 0.0
 @export var dash_cooldown: float = 0.6
 @export var dash_oxygen_cost: float = 12.0
 
+
 var is_dashing: bool = false
 var dash_timer: float = 0.0
 var dash_cooldown_timer: float = 0.0
@@ -62,7 +63,7 @@ func _ready() -> void:
 	shock_particles = CPUParticles2D.new()
 	shock_particles.emitting = false
 	shock_particles.one_shot = true
-	shock_particles.amount = 40
+	shock_particles.amount = 52
 	shock_particles.lifetime = 1.0
 	shock_particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
 	shock_particles.emission_sphere_radius = 20.0
@@ -294,9 +295,9 @@ func apply_bubble_boost(force: Vector2) -> void:
 	if not is_dead:
 		velocity += force
 
-func recharge_oxygen() -> void:
+func recharge_oxygen(amount: float) -> void:
 	if not is_dead:
-		oxygen = max_oxygen
+		oxygen = min(max_oxygen, oxygen + amount)
 		if is_suffocating:
 			stop_suffocating()
 		
@@ -334,10 +335,7 @@ func respawn(pos: Vector2) -> void:
 	position = pos
 	oxygen = max_oxygen
 	is_suffocating = false
-	is_dashing = false
-	is_stunned = false
-	stun_time_left = 0.0
-	suffocate_time_left = 5.0
+	is_dashing = false	
 	dash_timer = 0.0
 	dash_cooldown_timer = 0.0
 	collision_layer = 2
@@ -448,7 +446,8 @@ func _process(delta: float) -> void:
 			bubble_particles.emitting = false
 		if wind_particles:
 			wind_particles.emitting = false
-
+	
+	
 func get_survivor() -> CharacterBody2D:
 	var parent = get_parent()
 	if not parent:

@@ -33,7 +33,7 @@ var bubbles: CPUParticles2D
 
 func _ready() -> void:
 	bubbles = CPUParticles2D.new()
-	bubbles.amount = 120
+	bubbles.amount = 156
 	bubbles.lifetime = 1.0
 	bubbles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
 	bubbles.emission_rect_extents = Vector2(300, 10)
