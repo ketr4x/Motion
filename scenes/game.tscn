@@ -41,6 +41,22 @@ position = Vector2(50, 0)
 [node name="LevelGenerator" type="Node2D" parent="." unique_id=360970816]
 script = ExtResource("2_lvlgen")
 
+[node name="WallLeft" type="ColorRect" parent="."]
+z_index = -9
+offset_left = -2300.0
+offset_top = -200000.0
+offset_right = -300.0
+offset_bottom = 200000.0
+color = Color(0.01, 0.02, 0.04, 1)
+
+[node name="WallRight" type="ColorRect" parent="."]
+z_index = -9
+offset_left = 300.0
+offset_top = -200000.0
+offset_right = 2300.0
+offset_bottom = 200000.0
+color = Color(0.01, 0.02, 0.04, 1)
+
 [node name="OceanBG" type="Sprite2D" parent="." unique_id=1906316384]
 self_modulate = Color(0.02, 0.08, 0.18, 1)
 z_index = -10

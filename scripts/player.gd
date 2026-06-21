@@ -3,11 +3,12 @@ extends CharacterBody2D
 @export var max_oxygen: float = 100.0
 @export var depletion_rate: float = 2.0
 
-var speed: float = 120.0
-var friction: float = 0.15
+@export var base_speed: float = 180.0
+@export var acceleration: float = 1200.0
+@export var water_friction: float = 800.0
 
 @export var oxygen: float = 100.0
-@export var camera_zoom: Vector2 = Vector2(1.7, 1.7)
+@export var camera_zoom: Vector2 = Vector2(2.5, 2.5)
 @export var horizontal_boundary: float = 300.0
 var is_dead: bool = false
 
@@ -39,6 +40,7 @@ var launch_direction: Vector2 = Vector2.ZERO
 @onready var camera: Camera2D = $Camera2D
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var bubble_particles: CPUParticles2D = %BubbleParticles
+@onready var wind_particles: CPUParticles2D = %WindParticles
 
 var anim_time: float = 0.0
 var spawn_intro_timer: float = 1.0
@@ -60,6 +62,13 @@ func _ready() -> void:
 		camera.global_position = Vector2(0, global_position.y)
 	else:
 		camera.enabled = false
+		
+	var peer_id = name.to_int()
+	if peer_id == 1:
+		sprite.texture = preload("res://assets/kaczka1.png")
+	else:
+		sprite.texture = preload("res://assets/kaczka2.png")
+		
 	original_color = Color.WHITE
 	sprite.self_modulate = original_color
 
@@ -105,7 +114,7 @@ func _physics_process(delta: float) -> void:
 		dash_timer -= delta
 		if dash_timer <= 0.0:
 			is_dashing = false
-			velocity = dash_dir * speed
+			velocity = dash_dir * base_speed
 		else:
 			velocity = dash_dir * dash_speed
 			move_and_slide()
@@ -160,11 +169,12 @@ func _physics_process(delta: float) -> void:
 				start_suffocating()
 			return
 	
-	var current_speed = speed * 0.3 if is_suffocating else speed
+	var current_speed = base_speed * 0.4 if is_suffocating else base_speed
+	var target_velocity = input_dir * current_speed
 	if input_dir != Vector2.ZERO:
-		velocity = velocity.lerp(input_dir * current_speed, 0.1)
+		velocity = velocity.move_toward(target_velocity, acceleration * delta)
 	else:
-		velocity = velocity.lerp(Vector2.ZERO, friction)
+		velocity = velocity.move_toward(Vector2.ZERO, water_friction * delta)
 		
 	move_and_slide()
 	position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
@@ -272,7 +282,7 @@ func _process(delta: float) -> void:
 			camera.offset = Vector2.ZERO
 				
 	var base_scale = Vector2(3.75, 3.75)
-	if velocity.length() > speed * 1.3 and not is_dead and not is_dashing and spawn_intro_timer <= 0.0:
+	if velocity.length() > base_speed * 1.3 and not is_dead and not is_dashing and spawn_intro_timer <= 0.0:
 		if abs(velocity.x) > abs(velocity.y):
 			sprite.scale = base_scale * Vector2(1.3, 0.75)
 		else:
@@ -293,13 +303,21 @@ func _process(delta: float) -> void:
 		anim_time += delta
 		if spawn_intro_timer > 0.0:
 			spawn_intro_timer -= delta
-		if spawn_intro_timer > 0.0 or is_dashing or is_launched:
-			sprite.rotation = lerp_angle(sprite.rotation, 0.0, 10.0 * delta)
-		elif velocity.length() > 10.0:
-			var target_rotation = velocity.angle() + PI/2
-			sprite.rotation = lerp_angle(sprite.rotation, target_rotation, 8.0 * delta)
-		else:
-			sprite.rotation = lerp_angle(sprite.rotation, 0.0, 5.0 * delta)
+			
+		# Flip handling
+		if velocity.x < -5.0:
+			sprite.flip_h = true
+		elif velocity.x > 5.0:
+			sprite.flip_h = false
+			
+		# Rotation handling (pitching in water)
+		var target_rotation = -PI/2 if sprite.flip_h else PI/2
+		if not is_dashing and not is_launched and spawn_intro_timer <= 0.0 and velocity.length() > 10.0:
+			var speed_ratio = clamp(velocity.y / base_speed, -1.0, 1.0)
+			var pitch = speed_ratio * 0.6
+			target_rotation += pitch * (-1.0 if sprite.flip_h else 1.0)
+			
+		sprite.rotation = lerp_angle(sprite.rotation, target_rotation, 6.0 * delta)
 
 		if bubble_particles:
 			bubble_particles.emitting = true
@@ -313,37 +331,40 @@ func _process(delta: float) -> void:
 				bubble_particles.speed_scale = 1.0
 			else:
 				bubble_particles.emitting = false
+				
+		if wind_particles:
+			if velocity.length() > 80.0 and not is_dead:
+				wind_particles.emitting = true
+				var move_dir = velocity.normalized()
+				wind_particles.direction = -move_dir
+				wind_particles.rotation = move_dir.angle() - PI/2
+			else:
+				wind_particles.emitting = false
 
-		if spawn_intro_timer > 0.0:
-			var t = 1.0 - spawn_intro_timer
-			var frame_idx = 10 + int(fmod(t * 14.0, 7.0))
-			sprite.frame_coords = Vector2i(clamp(frame_idx, 10, 16), 0)
-		elif is_dashing:
-			var t = 1.0 - (dash_timer / dash_duration)
-			var frame_idx = 10 + int(t * 7)
-			sprite.frame_coords = Vector2i(clamp(frame_idx, 10, 16), 0)
-		elif is_launched:
-			var t = 1.0 - (launch_timer / launch_duration_total)
-			var frame_idx = 10 + int(t * 14) % 7
-			sprite.frame_coords = Vector2i(clamp(frame_idx, 10, 16), 0)
-		elif is_stunned:
-			var frame_idx = int(anim_time * 24.0) % 20
+		if is_dashing or is_launched:
+			var t = 0.0
+			if is_dashing:
+				t = 1.0 - (dash_timer / dash_duration)
+			elif is_launched:
+				t = 1.0 - (launch_timer / launch_duration_total)
+			# Burst ma najpewniej max 6-8 klatek, by omijac puste konce
+			var frame_idx = clampi(int(t * 7.0), 0, 6)
+			sprite.frame_coords = Vector2i(frame_idx, 3)
+		elif is_stunned or is_suffocating:
+			var frame_idx = int(anim_time * 8.0) % 4
 			sprite.frame_coords = Vector2i(frame_idx, 0)
 		elif velocity.length() > 10.0:
-			var speed_mult = 0.4 if is_suffocating else 1.0
-			var frame_idx = int(anim_time * 12.0 * speed_mult) % 8
-			sprite.frame_coords = Vector2i(frame_idx, 2)
+			var speed_mult = 0.8 if is_suffocating else 1.0
+			var frame_idx = int(anim_time * 12.0 * speed_mult) % 12
+			sprite.frame_coords = Vector2i(frame_idx, 1)
 		else:
-			var idle_cycle = fmod(anim_time, 8.0)
-			if idle_cycle >= 6.0:
-				var frame_idx = int(anim_time * 10.0) % 20
-				sprite.frame_coords = Vector2i(frame_idx, 0)
-			else:
-				var frame_idx = int(anim_time * 6.0) % 10
-				sprite.frame_coords = Vector2i(frame_idx, 1)
+			var frame_idx = int(anim_time * 10.0) % 12
+			sprite.frame_coords = Vector2i(frame_idx, 2)
 	else:
 		if bubble_particles:
 			bubble_particles.emitting = false
+		if wind_particles:
+			wind_particles.emitting = false
 
 func get_survivor() -> CharacterBody2D:
 	var parent = get_parent()
@@ -366,8 +387,6 @@ func stop_suffocating() -> void:
 		return
 	is_suffocating = false
 	print(name, " stopped suffocating!")
-
-
 
 @rpc("any_peer", "call_local", "reliable")
 func receive_shared_oxygen(amount: float, giver_id: int) -> void:
