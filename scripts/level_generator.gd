@@ -1,10 +1,10 @@
 extends Node2D
 
-@export var spike_scene: PackedScene = preload("res://scenes/spike.tscn")
 @export var jellyfish_scene: PackedScene = preload("res://scenes/jellyfish.tscn")
 @export var oxygen_spot_scene: PackedScene = preload("res://scenes/oxygen_spot.tscn")
 @export var coop_gate_scene: PackedScene = preload("res://scenes/coop_gate.tscn")
 @export var current_vent_scene: PackedScene = preload("res://scenes/current_vent.tscn")
+@export var bubble_boost_scene: PackedScene = preload("res://scenes/bubble_boost.tscn")
 
 @export var start_depth: float = 300.0
 @export var end_depth: float = 3600.0
@@ -23,6 +23,7 @@ func generate_level(p_seed: int) -> void:
 	
 	var current_depth = start_depth
 	var oxygen_spawn_counter = 0
+	var boost_spawn_counter = 0
 	
 	while current_depth < end_depth:
 		if abs(current_depth - 1200.0) < 10.0 or abs(current_depth - 2460.0) < 10.0:
@@ -54,14 +55,8 @@ func generate_level(p_seed: int) -> void:
 			
 			if not too_close:
 				spawned_x_positions.append(obstacle_x)
-				var obstacle
-				if rng.randf() < 0.9:
-					obstacle = jellyfish_scene.instantiate()
-					obstacle.name = "Jellyfish_" + str(int(current_depth)) + "_" + str(i)
-				else:
-					obstacle = spike_scene.instantiate()
-					obstacle.name = "Spike_" + str(int(current_depth)) + "_" + str(i)
-				
+				var obstacle = jellyfish_scene.instantiate()
+				obstacle.name = "Jellyfish_" + str(int(current_depth)) + "_" + str(i)
 				obstacle.position = Vector2(obstacle_x, current_depth)
 				get_parent().add_child(obstacle)
 		
@@ -70,8 +65,8 @@ func generate_level(p_seed: int) -> void:
 			oxygen_spawn_counter = 0
 			var ox_x = rng.randf_range(x_min, x_max)
 			var valid_pos = true
-			for spike_x in spawned_x_positions:
-				if abs(spike_x - ox_x) < 50.0:
+			for obs_x in spawned_x_positions:
+				if abs(obs_x - ox_x) < 50.0:
 					valid_pos = false
 					break
 			if not valid_pos:
@@ -81,5 +76,16 @@ func generate_level(p_seed: int) -> void:
 			ox_spot.position = Vector2(ox_x, current_depth)
 			ox_spot.name = "Oxygen_" + str(int(current_depth))
 			get_parent().add_child(ox_spot)
+		
+		# Spawn bubble boost lanes every ~5 intervals
+		boost_spawn_counter += 1
+		if boost_spawn_counter >= 5:
+			boost_spawn_counter = 0
+			var side = -1 if rng.randf() < 0.5 else 1
+			var boost_x = side * rng.randf_range(150.0, 280.0)
+			var boost = bubble_boost_scene.instantiate()
+			boost.position = Vector2(boost_x, current_depth)
+			boost.name = "BubbleBoost_" + str(int(current_depth))
+			get_parent().add_child(boost)
 		
 		current_depth += depth_interval

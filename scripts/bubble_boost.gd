@@ -1,11 +1,10 @@
 extends Area2D
 
-@export var boost_direction: Vector2 = Vector2.UP
-@export var boost_strength: float = 600.0
+@export var boost_direction: Vector2 = Vector2.DOWN
+@export var boost_strength: float = 400.0
 
-func _ready() -> void:
-	body_entered.connect(_on_body_entered)
-
-func _on_body_entered(body: Node2D) -> void:
-	if body is CharacterBody2D and body.has_method("apply_bubble_boost"):
-		body.apply_bubble_boost(boost_direction * boost_strength)
+func _physics_process(delta: float) -> void:
+	for body in get_overlapping_bodies():
+		if body is CharacterBody2D and "is_dead" in body and not body.is_dead:
+			var boost = boost_direction.normalized() * boost_strength * delta
+			body.velocity += boost

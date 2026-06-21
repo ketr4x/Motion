@@ -32,6 +32,7 @@ var dash_dir: Vector2 = Vector2.ZERO
 var was_shift_pressed: bool = false
 var was_e_pressed: bool = false
 var last_look_dir: Vector2 = Vector2(0, 1)
+var coop_speed_bonus: float = 0.0
 
 var is_launched: bool = false
 var launch_timer: float = 0.0
@@ -190,9 +191,14 @@ func _physics_process(delta: float) -> void:
 		var dist_slip = global_position.distance_to(teammate_slip.global_position)
 		if dist_slip < 120.0:
 			slipstream_boost = 1.4
+			if teammate_slip.velocity.normalized().dot(velocity.normalized()) > 0.8:
+				slipstream_boost = 1.55
 	
 	var current_speed = base_speed * 0.4 if is_suffocating else base_speed
 	current_speed *= slipstream_boost
+	if coop_speed_bonus > 0.0:
+		current_speed *= (1.0 + coop_speed_bonus)
+		coop_speed_bonus = move_toward(coop_speed_bonus, 0.0, 0.15 * delta)
 	
 	if is_stunned:
 		current_speed *= 0.3 # Smoła stuna
@@ -236,6 +242,7 @@ func _physics_process(delta: float) -> void:
 						teammate_oxy.receive_shared_oxygen.rpc_id(other_peer_id, 30.0, multiplayer.get_unique_id())
 					else:
 						teammate_oxy.receive_shared_oxygen(30.0, 1)
+					coop_speed_bonus = 0.3
 
 	if is_multiplayer_authority() and oxygen > 0:
 		var current_depletion = depletion_rate
@@ -364,12 +371,12 @@ func _process(delta: float) -> void:
 		if bubble_particles:
 			bubble_particles.emitting = true
 			if is_dashing or is_launched or spawn_intro_timer > 0.0:
-				bubble_particles.amount = 30
-				bubble_particles.lifetime = 0.5
-				bubble_particles.speed_scale = 1.5
+				bubble_particles.amount = 12
+				bubble_particles.lifetime = 0.8
+				bubble_particles.speed_scale = 1.3
 			elif velocity.length() > 10.0:
-				bubble_particles.amount = 16
-				bubble_particles.lifetime = 0.6
+				bubble_particles.amount = 6
+				bubble_particles.lifetime = 1.0
 				bubble_particles.speed_scale = 1.0
 			else:
 				bubble_particles.emitting = false
