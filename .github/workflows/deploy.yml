@@ -1,0 +1,67 @@
+name: Deploy & Release
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Godot Engine
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.0
+          use-dotnet: false
+          include-templates: true
+
+      - name: Create Build Directories
+        run: |
+          mkdir -p build/web
+          mkdir -p build/windows
+
+      - name: Export Web Build
+        run: godot --headless --export-release "Web" build/web/index.html
+
+      - name: Export Windows Desktop Build
+        run: godot --headless --export-release "Windows Desktop" build/windows/Motion.exe
+
+      - name: Package Windows Build
+        run: |
+          cd build/windows
+          zip -r ../../Motion-Windows.zip .
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3
+        if: ${{ secrets.NETLIFY_AUTH_TOKEN != '' && secrets.NETLIFY_SITE_ID != '' }}
+        with:
+          publish-dir: './build/web'
+          production-deploy: ${{ github.ref == 'refs/heads/main' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          enable-pull-request-comment: true
+          overwrites-pull-request-comment: true
+          deploy-message: "Deploy from GitHub Actions (Commit: ${{ github.sha }})"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Update Latest GitHub Release (Main Branch Only)
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: latest
+          name: "Latest Build"
+          body: "This release contains the latest Windows build from the main branch."
+          draft: false
+          prerelease: true
+          files: |
+            Motion-Windows.zip
