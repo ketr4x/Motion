@@ -1,10 +1,11 @@
-[gd_scene load_steps=30 format=3 uid="uid://cppfb3dyhpkq4"]
+[gd_scene load_steps=31 format=3 uid="uid://cppfb3dyhpkq4"]
 
 [ext_resource type="Script" uid="uid://bvjfwcsgu5axn" path="res://scripts/menu.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://bqw385n15yda1" path="res://assets/mainmenumotionfile.png" id="2_mainbg"]
 [ext_resource type="Texture2D" uid="uid://b0xyslayjammp" path="res://assets/clouds.png" id="3_clouds"]
 [ext_resource type="Texture2D" uid="uid://c0y86tl605g6h" path="res://assets/LOGOMOTION.png" id="4_logo"]
 [ext_resource type="FontFile" uid="uid://di8wo4lhpfqr5" path="res://assets/Cairopixel.ttf" id="5_font"]
+[ext_resource type="Shader" path="res://scripts/retro_crt.gdshader" id="6_shader"]
 
 [sub_resource type="AtlasTexture" id="atlas_cloud_0"]
 atlas = ExtResource("3_clouds")
@@ -125,84 +126,75 @@ animations = [{
 
 [sub_resource type="Theme" id="theme_ui"]
 default_font = ExtResource("5_font")
-default_font_size = 24
+default_font_size = 32
 
-[sub_resource type="StyleBoxFlat" id="sb_input"]
-bg_color = Color(0.45, 0.7, 0.92, 0.25)
+[sub_resource type="StyleBoxFlat" id="sb_win95_panel"]
+bg_color = Color(0.75, 0.75, 0.75, 1)
 border_width_left = 3
 border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.6, 0.82, 1.0, 0.35)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+border_color = Color(1, 1, 1, 1)
+shadow_color = Color(0.1, 0.1, 0.1, 1)
+shadow_size = 0
+shadow_offset = Vector2(3, 3)
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
+
+[sub_resource type="StyleBoxFlat" id="sb_win95_btn"]
+bg_color = Color(0.75, 0.75, 0.75, 1)
+border_width_left = 3
+border_width_top = 3
+border_color = Color(1, 1, 1, 1)
+shadow_color = Color(0.1, 0.1, 0.1, 1)
+shadow_size = 0
+shadow_offset = Vector2(3, 3)
 content_margin_left = 12.0
 content_margin_top = 8.0
 content_margin_right = 12.0
 content_margin_bottom = 8.0
 
-[sub_resource type="StyleBoxFlat" id="sb_input_focus"]
-bg_color = Color(0.5, 0.75, 0.95, 0.4)
+[sub_resource type="StyleBoxFlat" id="sb_win95_btn_pressed"]
+bg_color = Color(0.65, 0.65, 0.65, 1)
 border_width_left = 3
 border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.7, 0.88, 1.0, 0.55)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+border_color = Color(0.1, 0.1, 0.1, 1)
+shadow_color = Color(1, 1, 1, 1)
+shadow_size = 0
+shadow_offset = Vector2(3, 3)
 content_margin_left = 12.0
 content_margin_top = 8.0
 content_margin_right = 12.0
 content_margin_bottom = 8.0
 
-[sub_resource type="StyleBoxEmpty" id="sb_btn_normal"]
-
-[sub_resource type="StyleBoxFlat" id="sb_btn_hover"]
-bg_color = Color(1, 1, 1, 0.1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
-[sub_resource type="StyleBoxFlat" id="sb_panel"]
-bg_color = Color(0.02, 0.06, 0.15, 0.85)
+[sub_resource type="StyleBoxFlat" id="sb_win95_input"]
+bg_color = Color(1, 1, 1, 1)
 border_width_left = 3
 border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.3, 0.5, 0.8, 0.3)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
+border_color = Color(0.1, 0.1, 0.1, 1)
+shadow_color = Color(1, 1, 1, 1)
+shadow_size = 0
+shadow_offset = Vector2(3, 3)
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
 
-[sub_resource type="StyleBoxFlat" id="sb_lobby_btn"]
-bg_color = Color(0.05, 0.12, 0.28, 0.7)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.25, 0.45, 0.75, 0.4)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[sub_resource type="StyleBoxFlat" id="sb_win95_titlebar"]
+bg_color = Color(0, 0, 0.5, 1)
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
 
-[sub_resource type="StyleBoxFlat" id="sb_lobby_btn_hover"]
-bg_color = Color(0.08, 0.2, 0.4, 0.85)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.35, 0.6, 0.9, 0.6)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_crt"]
+shader = ExtResource("6_shader")
+shader_parameter/desaturation = 0.15
+shader_parameter/tint_factor = 0.05
+shader_parameter/tint_color = Color(0.95, 0.95, 0.9, 1)
+shader_parameter/chromatic_aberration = 0.001
+shader_parameter/scanline_intensity = 0.06
+shader_parameter/noise_intensity = 0.015
 
 [node name="Menu" type="Node2D"]
 script = ExtResource("1_script")
@@ -219,16 +211,12 @@ grow_vertical = 2
 color = Color(0.47, 0.72, 0.91, 1)
 
 [node name="OceanRect" type="ColorRect" parent="CanvasLayer"]
-anchor_top = 0.62
+anchor_top = 0.6
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.18, 0.56, 0.81, 1)
-
-[node name="CloudsContainer" type="Node2D" parent="CanvasLayer"]
-
-[node name="ReflectionsContainer" type="Node2D" parent="CanvasLayer"]
 
 [node name="ShipBG" type="AnimatedSprite2D" parent="CanvasLayer"]
 texture_filter = 1
@@ -238,91 +226,167 @@ sprite_frames = SubResource("sf_ship")
 animation = &"sail"
 autoplay = "sail"
 
+[node name="WindParticles" type="CPUParticles2D" parent="CanvasLayer"]
+position = Vector2(2000, 300)
+amount = 16
+lifetime = 6.0
+emission_shape = 3
+emission_rect_extents = Vector2(1, 400)
+direction = Vector2(-1, 0)
+spread = 5.0
+gravity = Vector2(-100, 0)
+initial_velocity_min = 150.0
+initial_velocity_max = 350.0
+scale_amount_min = 17.0
+scale_amount_max = 17.0
+color = Color(0.8, 0.95, 1, 0.15)
+
+[node name="BubbleParticles" type="CPUParticles2D" parent="CanvasLayer"]
+position = Vector2(1920, 800)
+amount = 24
+lifetime = 15.0
+emission_shape = 3
+emission_rect_extents = Vector2(1, 200)
+direction = Vector2(-1, 0)
+spread = 15.0
+gravity = Vector2(-50, 0)
+initial_velocity_min = 100.0
+initial_velocity_max = 250.0
+scale_amount_min = 17.0
+scale_amount_max = 17.0
+color = Color(0.6, 0.85, 1, 0.07)
+
+[node name="CloudsContainer" type="Node2D" parent="CanvasLayer"]
+
+[node name="ReflectionsContainer" type="Node2D" parent="CanvasLayer"]
+
 [node name="Logo" type="AnimatedSprite2D" parent="CanvasLayer"]
 texture_filter = 1
-position = Vector2(960, 150)
-scale = Vector2(7, 7)
+position = Vector2(960, 200)
+scale = Vector2(16, 16)
 sprite_frames = SubResource("sf_logo")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="UIContainer" type="Control" parent="CanvasLayer"]
-anchor_left = 0.4
-anchor_top = 0.8
-anchor_right = 0.6
-anchor_bottom = 0.96
+[node name="UIContainer" type="PanelContainer" parent="CanvasLayer"]
+anchor_left = 0.35
+anchor_top = 0.70
+anchor_right = 0.65
+anchor_bottom = 0.95
 grow_horizontal = 2
 grow_vertical = 2
 theme = SubResource("theme_ui")
+theme_override_styles/panel = SubResource("sb_win95_panel")
 
 [node name="VBox" type="VBoxContainer" parent="CanvasLayer/UIContainer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 theme_override_constants/separation = 12
+
+[node name="WindowTitleBar" type="PanelContainer" parent="CanvasLayer/UIContainer/VBox"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("sb_win95_titlebar")
+
+[node name="HBox" type="HBoxContainer" parent="CanvasLayer/UIContainer/VBox/WindowTitleBar"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/UIContainer/VBox/WindowTitleBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "Motion_Client.exe"
+
+[node name="MinBtn" type="Button" parent="CanvasLayer/UIContainer/VBox/WindowTitleBar/HBox"]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("sb_win95_btn")
+theme_override_styles/hover = SubResource("sb_win95_btn")
+theme_override_styles/pressed = SubResource("sb_win95_btn_pressed")
+text = "-"
+
+[node name="CloseBtn" type="Button" parent="CanvasLayer/UIContainer/VBox/WindowTitleBar/HBox"]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("sb_win95_btn")
+theme_override_styles/hover = SubResource("sb_win95_btn")
+theme_override_styles/pressed = SubResource("sb_win95_btn_pressed")
+text = "X"
 
 [node name="NameInput" type="LineEdit" parent="CanvasLayer/UIContainer/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_placeholder_color = Color(0.85, 0.9, 1, 0.5)
-theme_override_styles/normal = SubResource("sb_input")
-theme_override_styles/focus = SubResource("sb_input_focus")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_placeholder_color = Color(0.3, 0.3, 0.3, 0.5)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("sb_win95_input")
+theme_override_styles/focus = SubResource("sb_win95_input")
 placeholder_text = "Enter name..."
 alignment = 1
 
 [node name="IPInput" type="LineEdit" parent="CanvasLayer/UIContainer/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_placeholder_color = Color(0.85, 0.9, 1, 0.5)
-theme_override_styles/normal = SubResource("sb_input")
-theme_override_styles/focus = SubResource("sb_input_focus")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_placeholder_color = Color(0.3, 0.3, 0.3, 0.5)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("sb_win95_input")
+theme_override_styles/focus = SubResource("sb_win95_input")
 placeholder_text = "127.0.0.1"
 alignment = 1
 
 [node name="ButtonsHBox" type="HBoxContainer" parent="CanvasLayer/UIContainer/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 12
 alignment = 1
 
 [node name="HostButton" type="Button" parent="CanvasLayer/UIContainer/VBox/ButtonsHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(0.85, 0.92, 1, 1)
-theme_override_styles/normal = SubResource("sb_btn_normal")
-theme_override_styles/hover = SubResource("sb_btn_hover")
-theme_override_styles/pressed = SubResource("sb_btn_hover")
-theme_override_styles/focus = SubResource("sb_btn_normal")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("sb_win95_btn")
+theme_override_styles/hover = SubResource("sb_win95_btn")
+theme_override_styles/pressed = SubResource("sb_win95_btn_pressed")
+theme_override_styles/focus = SubResource("sb_win95_btn")
 text = "HOST"
 
 [node name="JoinButton" type="Button" parent="CanvasLayer/UIContainer/VBox/ButtonsHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(0.85, 0.92, 1, 1)
-theme_override_styles/normal = SubResource("sb_btn_normal")
-theme_override_styles/hover = SubResource("sb_btn_hover")
-theme_override_styles/pressed = SubResource("sb_btn_hover")
-theme_override_styles/focus = SubResource("sb_btn_normal")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("sb_win95_btn")
+theme_override_styles/hover = SubResource("sb_win95_btn")
+theme_override_styles/pressed = SubResource("sb_win95_btn_pressed")
+theme_override_styles/focus = SubResource("sb_win95_btn")
 text = "JOIN"
 
 [node name="SettingsButton" type="Button" parent="CanvasLayer/UIContainer/VBox/ButtonsHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(0.85, 0.92, 1, 1)
-theme_override_styles/normal = SubResource("sb_btn_normal")
-theme_override_styles/hover = SubResource("sb_btn_hover")
-theme_override_styles/pressed = SubResource("sb_btn_hover")
-theme_override_styles/focus = SubResource("sb_btn_normal")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("sb_win95_btn")
+theme_override_styles/hover = SubResource("sb_win95_btn")
+theme_override_styles/pressed = SubResource("sb_win95_btn_pressed")
+theme_override_styles/focus = SubResource("sb_win95_btn")
 text = "SETTINGS"
 
 [node name="StatusLabel" type="Label" parent="CanvasLayer/UIContainer/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.82, 0.95, 0.5)
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 20
 text = "Status: Ready"
 horizontal_alignment = 1
 
@@ -332,58 +396,58 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -160.0
-offset_right = 300.0
-offset_bottom = 160.0
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = SubResource("theme_ui")
-theme_override_styles/panel = SubResource("sb_panel")
+theme_override_styles/panel = SubResource("sb_win95_panel")
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/LobbyPanel"]
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/LobbyPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 18
+theme_override_constants/separation = 32
 
-[node name="VBox" type="VBoxContainer" parent="CanvasLayer/LobbyPanel/MarginContainer"]
+[node name="LobbyTitle" type="Label" parent="CanvasLayer/LobbyPanel/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="LobbyTitle" type="Label" parent="CanvasLayer/LobbyPanel/MarginContainer/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 32
-text = "DIVE LOBBY"
-horizontal_alignment = 1
+theme_override_styles/normal = SubResource("sb_win95_titlebar")
+text = "Lobby.exe"
 
-[node name="PlayerList" type="Label" parent="CanvasLayer/LobbyPanel/MarginContainer/VBox"]
+[node name="PlayerList" type="Label" parent="CanvasLayer/LobbyPanel/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 1)
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = "Waiting for players..."
-horizontal_alignment = 1
 
-[node name="ButtonsBox" type="HBoxContainer" parent="CanvasLayer/LobbyPanel/MarginContainer/VBox"]
+[node name="ButtonsBox" type="HBoxContainer" parent="CanvasLayer/LobbyPanel/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 24
+alignment = 1
 
-[node name="StartButton" type="Button" parent="CanvasLayer/LobbyPanel/MarginContainer/VBox/ButtonsBox"]
+[node name="StartButton" type="Button" parent="CanvasLayer/LobbyPanel/VBox/ButtonsBox"]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_styles/normal = SubResource("sb_lobby_btn")
-theme_override_styles/hover = SubResource("sb_lobby_btn_hover")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("sb_win95_btn")
+theme_override_styles/hover = SubResource("sb_win95_btn")
+theme_override_styles/pressed = SubResource("sb_win95_btn_pressed")
 text = "Ready Up"
 
-[node name="LeaveButton" type="Button" parent="CanvasLayer/LobbyPanel/MarginContainer/VBox/ButtonsBox"]
+[node name="LeaveButton" type="Button" parent="CanvasLayer/LobbyPanel/VBox/ButtonsBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_styles/normal = SubResource("sb_lobby_btn")
-theme_override_styles/hover = SubResource("sb_lobby_btn_hover")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("sb_win95_btn")
+theme_override_styles/hover = SubResource("sb_win95_btn")
+theme_override_styles/pressed = SubResource("sb_win95_btn_pressed")
 text = "Leave Lobby"
 
 [node name="SettingsPanel" type="PanelContainer" parent="CanvasLayer"]
@@ -392,69 +456,70 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -180.0
-offset_right = 300.0
-offset_bottom = 180.0
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = SubResource("theme_ui")
-theme_override_styles/panel = SubResource("sb_panel")
+theme_override_styles/panel = SubResource("sb_win95_panel")
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/SettingsPanel"]
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/SettingsPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 18
+theme_override_constants/separation = 32
 
-[node name="VBox" type="VBoxContainer" parent="CanvasLayer/SettingsPanel/MarginContainer"]
+[node name="SettingsTitle" type="Label" parent="CanvasLayer/SettingsPanel/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="SettingsTitle" type="Label" parent="CanvasLayer/SettingsPanel/MarginContainer/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 32
-text = "SETTINGS"
-horizontal_alignment = 1
+theme_override_styles/normal = SubResource("sb_win95_titlebar")
+text = "Settings.exe"
 
-[node name="ResolutionBox" type="HBoxContainer" parent="CanvasLayer/SettingsPanel/MarginContainer/VBox"]
+[node name="ResolutionBox" type="HBoxContainer" parent="CanvasLayer/SettingsPanel/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 24
 
-[node name="Label" type="Label" parent="CanvasLayer/SettingsPanel/MarginContainer/VBox/ResolutionBox"]
-custom_minimum_size = Vector2(140, 0)
+[node name="Label" type="Label" parent="CanvasLayer/SettingsPanel/VBox/ResolutionBox"]
+custom_minimum_size = Vector2(240, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = "Resolution:"
 
-[node name="ResolutionBtn" type="OptionButton" parent="CanvasLayer/SettingsPanel/MarginContainer/VBox/ResolutionBox"]
+[node name="ResolutionBtn" type="OptionButton" parent="CanvasLayer/SettingsPanel/VBox/ResolutionBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/normal = SubResource("sb_input")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("sb_win95_btn")
+theme_override_styles/hover = SubResource("sb_win95_btn")
+theme_override_styles/pressed = SubResource("sb_win95_btn_pressed")
 
-[node name="FullscreenBox" type="HBoxContainer" parent="CanvasLayer/SettingsPanel/MarginContainer/VBox"]
+[node name="FullscreenBox" type="HBoxContainer" parent="CanvasLayer/SettingsPanel/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 24
 
-[node name="Label" type="Label" parent="CanvasLayer/SettingsPanel/MarginContainer/VBox/FullscreenBox"]
-custom_minimum_size = Vector2(140, 0)
+[node name="Label" type="Label" parent="CanvasLayer/SettingsPanel/VBox/FullscreenBox"]
+custom_minimum_size = Vector2(240, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = "Fullscreen:"
 
-[node name="FullscreenCheck" type="CheckBox" parent="CanvasLayer/SettingsPanel/MarginContainer/VBox/FullscreenBox"]
+[node name="FullscreenCheck" type="CheckBox" parent="CanvasLayer/SettingsPanel/VBox/FullscreenBox"]
 layout_mode = 2
 
-[node name="VolumeBox" type="HBoxContainer" parent="CanvasLayer/SettingsPanel/MarginContainer/VBox"]
+[node name="VolumeBox" type="HBoxContainer" parent="CanvasLayer/SettingsPanel/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 24
 
-[node name="Label" type="Label" parent="CanvasLayer/SettingsPanel/MarginContainer/VBox/VolumeBox"]
-custom_minimum_size = Vector2(140, 0)
+[node name="Label" type="Label" parent="CanvasLayer/SettingsPanel/VBox/VolumeBox"]
+custom_minimum_size = Vector2(240, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = "Master Vol:"
 
-[node name="VolumeSlider" type="HSlider" parent="CanvasLayer/SettingsPanel/MarginContainer/VBox/VolumeBox"]
+[node name="VolumeSlider" type="HSlider" parent="CanvasLayer/SettingsPanel/VBox/VolumeBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -462,9 +527,21 @@ max_value = 1.0
 step = 0.05
 value = 0.8
 
-[node name="SettingsBackButton" type="Button" parent="CanvasLayer/SettingsPanel/MarginContainer/VBox"]
+[node name="SettingsBackButton" type="Button" parent="CanvasLayer/SettingsPanel/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_styles/normal = SubResource("sb_lobby_btn")
-theme_override_styles/hover = SubResource("sb_lobby_btn_hover")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("sb_win95_btn")
+theme_override_styles/hover = SubResource("sb_win95_btn")
+theme_override_styles/pressed = SubResource("sb_win95_btn_pressed")
 text = "Back"
+
+[node name="CRTShaderEffect" type="ColorRect" parent="CanvasLayer"]
+material = SubResource("ShaderMaterial_crt")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
