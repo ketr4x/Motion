@@ -58,7 +58,7 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	oxygen = max_oxygen
-	if is_multiplayer_authority():
+	if is_local_authority():
 		camera.enabled = true
 		camera.top_level = true
 		camera.zoom = camera_zoom
@@ -79,7 +79,7 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 
-	if not is_multiplayer_authority():
+	if not is_local_authority():
 		return
 
 	if spawn_intro_timer > 0.0:
@@ -244,7 +244,7 @@ func _physics_process(delta: float) -> void:
 						teammate_oxy.receive_shared_oxygen(30.0, 1)
 					coop_speed_bonus = 0.3
 
-	if is_multiplayer_authority() and oxygen > 0:
+	if is_local_authority() and oxygen > 0:
 		var current_depletion = depletion_rate
 		if is_solo:
 			current_depletion *= 0.3 # W solo zużycie tlenu jest dużo mniejsze
@@ -268,7 +268,7 @@ func recharge_oxygen() -> void:
 func die() -> void:
 	if not multiplayer.has_multiplayer_peer():
 		_die_rpc()
-	elif is_multiplayer_authority() or multiplayer.is_server():
+	elif is_local_authority() or multiplayer.is_server():
 		_die_rpc.rpc()
 
 @rpc("any_peer", "call_local", "reliable")
@@ -304,11 +304,11 @@ func respawn(pos: Vector2) -> void:
 	sprite.visible = true
 	spawn_intro_timer = 1.0
 	velocity = Vector2.ZERO
-	if is_multiplayer_authority():
+	if is_local_authority():
 		camera.global_position = Vector2(0, pos.y)
 
 func shake_camera(intensity: float, duration: float) -> void:
-	if is_multiplayer_authority():
+	if is_local_authority():
 		shake_amount = intensity
 		shake_decay = intensity / duration
 
@@ -321,7 +321,7 @@ func _process(delta: float) -> void:
 		if launch_timer <= 0.0:
 			is_launched = false
 
-	if is_multiplayer_authority():
+	if is_local_authority():
 		if not is_dead:
 			camera.global_position = Vector2(0, global_position.y)
 		else:
@@ -435,7 +435,7 @@ func stop_suffocating() -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func receive_shared_oxygen(amount: float, giver_id: int) -> void:
-	if is_multiplayer_authority():
+	if is_local_authority():
 		if is_dead:
 			return
 		oxygen = min(max_oxygen, oxygen + amount)
@@ -447,7 +447,7 @@ func receive_shared_oxygen(amount: float, giver_id: int) -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func deduct_oxygen(amount: float) -> void:
-	if is_multiplayer_authority():
+	if is_local_authority():
 		oxygen = max(0.0, oxygen - amount)
 
 @rpc("any_peer", "call_local", "reliable")
@@ -470,6 +470,11 @@ func apply_slingshot_launch(launch_vel: Vector2) -> void:
 	is_suffocating = false
 	suffocate_time_left = 5.0
 	
-	if is_multiplayer_authority():
+	if is_local_authority():
 		velocity = launch_vel
 		shake_camera(12.0, 0.4)
+
+func is_local_authority() -> bool:
+	if not multiplayer.has_multiplayer_peer():
+		return true
+	return is_multiplayer_authority()
