@@ -9,8 +9,8 @@ extends Node2D
 @export var start_depth: float = 300.0
 @export var end_depth: float = 3600.0
 @export var depth_interval: float = 180.0
-@export var x_min: float = -350.0
-@export var x_max: float = 350.0
+@export var x_min: float = -280.0
+@export var x_max: float = 280.0
 
 var level_seed: int = 0
 

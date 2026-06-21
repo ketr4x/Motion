@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://df5s7hcl8vclp"]
+[gd_scene load_steps=8 format=3 uid="uid://df5s7hcl8vclp"]
 
 [ext_resource type="Script" path="res://scripts/clippy.gd" id="1_clippy"]
 [ext_resource type="Shader" path="res://scripts/clippy_black_key.gdshader" id="2_shader"]
@@ -8,63 +8,33 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_key"]
 shader = ExtResource("2_shader")
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_clippy"]
-bg_color = Color(1, 1, 0.88, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.0, 0.0, 0.0, 1)
-shadow_color = Color(0, 0, 0, 0.25)
-shadow_size = 1
-shadow_offset = Vector2(3, 3)
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_clippy"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
-bg_color = Color(0.75, 0.75, 0.75, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.0, 0.0, 0.0, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
-bg_color = Color(0.85, 0.85, 0.85, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.0, 0.0, 0.0, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_pressed"]
-bg_color = Color(0.6, 0.6, 0.6, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.0, 0.0, 0.0, 1)
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_btn"]
 
 [node name="Clippy" type="Control"]
-custom_minimum_size = Vector2(500, 240)
+custom_minimum_size = Vector2(640, 260)
 layout_mode = 3
-anchors_preset = 3
+anchors_preset = 1
 anchor_left = 1.0
-anchor_top = 1.0
+anchor_top = 0.0
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -520.0
-offset_top = -280.0
+anchor_bottom = 0.0
+offset_left = -660.0
+offset_top = 20.0
 offset_right = -20.0
-offset_bottom = -40.0
+offset_bottom = 280.0
 grow_horizontal = 0
-grow_vertical = 0
 script = ExtResource("1_clippy")
 
 [node name="SpeechBubble" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(360, 170)
+custom_minimum_size = Vector2(390, 220)
 layout_mode = 0
-offset_right = 365.0
-offset_bottom = 170.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_clippy")
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 410.0
+offset_bottom = 240.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_clippy")
 
 [node name="MarginContainer" type="MarginContainer" parent="SpeechBubble"]
 layout_mode = 2
@@ -79,49 +49,40 @@ theme_override_constants/separation = 8
 
 [node name="TitleLabel" type="Label" parent="SpeechBubble/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.0, 0.0, 0.0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
 theme_override_fonts/font = ExtResource("4_font")
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 14
 text = "Clippy"
 
 [node name="ContentLabel" type="Label" parent="SpeechBubble/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(250, 0)
+custom_minimum_size = Vector2(350, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.0, 0.0, 0.0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
 theme_override_fonts/font = ExtResource("4_font")
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 10
 text = "It looks like you're running low on oxygen. Try finding an Oxygen Spot to recharge!"
 autowrap_mode = 3
 
-[node name="HBox" type="HBoxContainer" parent="SpeechBubble/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 10
-alignment = 2
-
-[node name="CloseButton" type="Button" parent="SpeechBubble/MarginContainer/VBoxContainer/HBox"]
-custom_minimum_size = Vector2(75, 22)
-layout_mode = 2
-focus_mode = 0
-theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
-theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("4_font")
-theme_override_font_sizes/font_size = 8
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
-text = "Dismiss"
-
 [node name="ClippyTexture" type="TextureRect" parent="."]
 material = SubResource("ShaderMaterial_key")
-custom_minimum_size = Vector2(110, 120)
+custom_minimum_size = Vector2(200, 220)
 layout_mode = 0
-offset_left = 375.0
-offset_top = 75.0
-offset_right = 485.0
-offset_bottom = 195.0
+offset_left = 430.0
+offset_top = 20.0
+offset_right = 630.0
+offset_bottom = 240.0
 size_flags_vertical = 4
 texture = ExtResource("3_texture")
 expand_mode = 1

@@ -180,9 +180,7 @@ func win_game(final_time_ms: float) -> void:
 	MultiplayerManager.show_ending_screen = true
 	MultiplayerManager.ending_victory = true
 	
-	if multiplayer.has_multiplayer_peer():
-		multiplayer.multiplayer_peer = null
-	MultiplayerManager.players.clear()
+	MultiplayerManager.leave_game()
 	
 	call_deferred("_transition_to_menu")
 
@@ -243,9 +241,7 @@ func transition_to_death(final_time_ms: float) -> void:
 	MultiplayerManager.show_ending_screen = true
 	MultiplayerManager.ending_victory = false
 	
-	if multiplayer.has_multiplayer_peer():
-		multiplayer.multiplayer_peer = null
-	MultiplayerManager.players.clear()
+	MultiplayerManager.leave_game()
 	call_deferred("_transition_to_death")
 
 func _transition_to_death() -> void:
