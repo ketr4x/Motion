@@ -2,3 +2,7 @@
 .godot/
 /android/
 addons/talo/settings.cfg
+
+# Godot GDExtension temporary files
+webrtc/lib/~*
+*.bak
