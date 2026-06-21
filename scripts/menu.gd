@@ -57,6 +57,8 @@ const LOGO_BOB_DURATION := 0.75
 @onready var ending_best_time_label: Label = $CanvasLayer/EndingPanel/VBox/StatsVBox/BestTimeLabel
 @onready var ending_wr_label: Label = $CanvasLayer/EndingPanel/VBox/StatsVBox/WRLabel
 @onready var ending_back_button: Button = $CanvasLayer/EndingPanel/VBox/EndingBackButton
+@onready var leaderboard_panel: PanelContainer = $CanvasLayer/LeaderboardPanel
+@onready var leaderboard_list_label: Label = $CanvasLayer/LeaderboardPanel/VBox/LeaderboardList
 
 var clouds: Array[Sprite2D] = []
 var reflections: Array[Sprite2D] = []
@@ -362,6 +364,7 @@ func _setup_ending() -> void:
 
 		ui_container.visible = false
 		ending_panel.visible = true
+		leaderboard_panel.visible = true
 		pause_background()
 
 		if MultiplayerManager.ending_victory:
@@ -389,8 +392,52 @@ func _setup_ending() -> void:
 
 		ending_wr_label.text = "WR: 00:54.21"
 
+		_update_talo_leaderboard()
+
+func _update_talo_leaderboard() -> void:
+	leaderboard_list_label.text = "Connecting to Talo..."
+
+	var p_name = MultiplayerManager.local_player_name
+	if p_name.strip_edges() == "":
+		p_name = "Player"
+
+	var player = await Talo.players.identify("username", p_name)
+	if player == null:
+		leaderboard_list_label.text = "Failed to authenticate with Talo.\nMake sure settings.cfg has a valid access_key."
+		return
+
+	if MultiplayerManager.ending_victory:
+		leaderboard_list_label.text = "Submitting score..."
+		var res = await Talo.leaderboards.add_entry("speedrun_times", MultiplayerManager.last_time)
+		if res == null:
+			print("Talo Error: Failed to submit score. Make sure the leaderboard 'speedrun_times' is created in the Talo dashboard.")
+
+	leaderboard_list_label.text = "Loading global scores..."
+	var options = LeaderboardsAPI.GetEntriesOptions.new()
+	options.page = 0
+	var entries_page = await Talo.leaderboards.get_entries("speedrun_times", options)
+
+	if entries_page == null:
+		leaderboard_list_label.text = "Failed to load leaderboard.\nMake sure a leaderboard named 'speedrun_times'\nexists in the Talo dashboard."
+		return
+
+	if entries_page.entries.size() == 0:
+		leaderboard_list_label.text = "No scores submitted yet!\nBe the first to set a record!"
+		return
+
+	var list_text = ""
+	var rank = 1
+	for entry in entries_page.entries:
+		var name_str = entry.player_alias.identifier
+		var score_str = format_time(entry.score)
+		list_text += "%d. %s - %s\n" % [rank, name_str, score_str]
+		rank += 1
+
+	leaderboard_list_label.text = list_text
+
 func _on_ending_back_pressed() -> void:
 	ending_panel.visible = false
+	leaderboard_panel.visible = false
 	ui_container.visible = true
 	resume_background()
 
