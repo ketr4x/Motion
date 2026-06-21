@@ -11,6 +11,14 @@ var friction: float = 0.15
 @export var horizontal_boundary: float = 300.0
 var is_dead: bool = false
 
+var is_suffocating: bool = false
+var suffocate_time_left: float = 5.0
+var original_color: Color = Color.WHITE
+
+var is_stunned: bool = false
+var stun_time_left: float = 0.0
+@export var stun_oxygen_depletion_multiplier: float = 3.0
+
 @export var dash_speed: float = 380.0
 @export var dash_duration: float = 0.22
 @export var dash_cooldown: float = 0.6
@@ -21,9 +29,22 @@ var dash_timer: float = 0.0
 var dash_cooldown_timer: float = 0.0
 var dash_dir: Vector2 = Vector2.ZERO
 var was_shift_pressed: bool = false
+var was_e_pressed: bool = false
+
+var is_launched: bool = false
+var launch_timer: float = 0.0
+var launch_duration_total: float = 0.4
+var launch_direction: Vector2 = Vector2.ZERO
 
 @onready var camera: Camera2D = $Camera2D
 @onready var sprite: Sprite2D = $Sprite2D
+@onready var bubble_particles: CPUParticles2D = %BubbleParticles
+
+var anim_time: float = 0.0
+var spawn_intro_timer: float = 1.0
+
+var shake_amount: float = 0.0
+var shake_decay: float = 0.0
 
 func _enter_tree() -> void:
 	var peer_id = name.to_int()
@@ -37,10 +58,10 @@ func _ready() -> void:
 		camera.top_level = true
 		camera.zoom = camera_zoom
 		camera.global_position = Vector2(0, global_position.y)
-		sprite.self_modulate = Color(0.2, 0.6, 1.0)
 	else:
 		camera.enabled = false
-		sprite.self_modulate = Color(0.2, 0.9, 0.6)
+	original_color = Color.WHITE
+	sprite.self_modulate = original_color
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
@@ -48,6 +69,34 @@ func _physics_process(delta: float) -> void:
 
 	if not is_multiplayer_authority():
 		return
+
+	if spawn_intro_timer > 0.0:
+		velocity = Vector2(0, 150.0)
+		move_and_slide()
+		position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
+		return
+
+	if is_launched:
+		launch_timer -= delta
+		if launch_timer <= 0.0:
+			is_launched = false
+		else:
+			velocity = launch_direction * (dash_speed * 1.5) * (launch_timer / launch_duration_total + 0.5)
+			move_and_slide()
+			position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
+			return
+
+	if is_suffocating:
+		suffocate_time_left -= delta
+		if suffocate_time_left <= 0.0:
+			is_suffocating = false
+			die()
+			return
+
+	if is_stunned:
+		stun_time_left -= delta
+		if stun_time_left <= 0.0:
+			is_stunned = false
 
 	if dash_cooldown_timer > 0.0:
 		dash_cooldown_timer -= delta
@@ -61,29 +110,39 @@ func _physics_process(delta: float) -> void:
 			velocity = dash_dir * dash_speed
 			move_and_slide()
 			position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
+			
+			var teammate = get_survivor()
+			if teammate and not teammate.is_dead:
+				var dist = global_position.distance_to(teammate.global_position)
+				if dist < 65.0:
+					teammate.apply_slingshot_launch.rpc(dash_dir * (dash_speed * 1.5))
+					is_dashing = false
+					dash_timer = 0.0
+					velocity = -dash_dir * 120.0
 			return
 
 	var input_dir = Vector2.ZERO
 	
-	if Input.is_action_pressed("left") or Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
-		input_dir.x = -1
-	if Input.is_action_pressed("right") or Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
-		input_dir.x = 1
-	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
-		input_dir.y = -1
-	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
-		input_dir.y = 1
-		
-	input_dir = input_dir.normalized()
+	if not is_stunned:
+		if Input.is_action_pressed("left") or Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+			input_dir.x = -1
+		if Input.is_action_pressed("right") or Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+			input_dir.x = 1
+		if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
+			input_dir.y = -1
+		if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
+			input_dir.y = 1
+			
+		input_dir = input_dir.normalized()
 
 	var is_shift_pressed = Input.is_key_pressed(KEY_SHIFT)
 	var just_pressed_shift = is_shift_pressed and not was_shift_pressed
 	was_shift_pressed = is_shift_pressed
 	
-	if just_pressed_shift and dash_cooldown_timer <= 0.0:
+	if just_pressed_shift and dash_cooldown_timer <= 0.0 and not is_stunned:
 		var d_dir = input_dir
 		if d_dir == Vector2.ZERO:
-			d_dir = Vector2.LEFT if sprite.flip_h else Vector2.RIGHT
+			d_dir = Vector2.UP.rotated(sprite.rotation)
 		
 		if oxygen > 0.0:
 			oxygen = max(0.0, oxygen - dash_oxygen_cost)
@@ -97,31 +156,54 @@ func _physics_process(delta: float) -> void:
 			position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
 			
 			if oxygen <= 0.0:
-				die()
+				oxygen = 0.0
+				start_suffocating()
 			return
 	
+	var current_speed = speed * 0.3 if is_suffocating else speed
 	if input_dir != Vector2.ZERO:
-		velocity = velocity.lerp(input_dir * speed, 0.1)
-		if input_dir.x != 0:
-			sprite.flip_h = input_dir.x < 0
+		velocity = velocity.lerp(input_dir * current_speed, 0.1)
 	else:
 		velocity = velocity.lerp(Vector2.ZERO, friction)
 		
 	move_and_slide()
 	position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
 
+	var is_e_pressed = Input.is_key_pressed(KEY_E)
+	var just_pressed_e = is_e_pressed and not was_e_pressed
+	was_e_pressed = is_e_pressed
+	
+	if just_pressed_e and not is_suffocating and oxygen > 40.0:
+		var teammate = get_survivor()
+		if teammate and teammate.is_suffocating:
+			var dist = global_position.distance_to(teammate.global_position)
+			if dist < 50.0:
+				var other_peer_id = teammate.name.to_int()
+				if other_peer_id > 0:
+					if multiplayer.has_multiplayer_peer():
+						teammate.receive_shared_oxygen.rpc_id(other_peer_id, 30.0, multiplayer.get_unique_id())
+					else:
+						teammate.receive_shared_oxygen(30.0, 1)
+
 	if is_multiplayer_authority() and oxygen > 0:
-		oxygen -= depletion_rate * delta
+		var current_depletion = depletion_rate
+		if is_stunned:
+			current_depletion *= stun_oxygen_depletion_multiplier
+		oxygen -= current_depletion * delta
 		if oxygen <= 0:
 			oxygen = 0
-			die()
+			start_suffocating()
 
 func recharge_oxygen() -> void:
 	if not is_dead:
 		oxygen = max_oxygen
+		if is_suffocating:
+			stop_suffocating()
 
 func die() -> void:
-	if is_multiplayer_authority() or multiplayer.is_server():
+	if not multiplayer.has_multiplayer_peer():
+		_die_rpc()
+	elif is_multiplayer_authority() or multiplayer.is_server():
 		_die_rpc.rpc()
 
 @rpc("any_peer", "call_local", "reliable")
@@ -130,6 +212,8 @@ func _die_rpc() -> void:
 		return
 	is_dead = true
 	oxygen = 0
+	is_suffocating = false
+	is_dashing = false
 	collision_layer = 0
 	collision_mask = 0
 	sprite.visible = false
@@ -143,14 +227,32 @@ func respawn(pos: Vector2) -> void:
 	is_dead = false
 	position = pos
 	oxygen = max_oxygen
+	is_suffocating = false
+	is_dashing = false
+	is_stunned = false
+	stun_time_left = 0.0
+	suffocate_time_left = 5.0
+	dash_timer = 0.0
+	dash_cooldown_timer = 0.0
 	collision_layer = 2
 	collision_mask = 1
 	sprite.visible = true
+	spawn_intro_timer = 1.0
 	velocity = Vector2.ZERO
 	if is_multiplayer_authority():
 		camera.global_position = Vector2(0, pos.y)
 
+func shake_camera(intensity: float, duration: float) -> void:
+	if is_multiplayer_authority():
+		shake_amount = intensity
+		shake_decay = intensity / duration
+
 func _process(delta: float) -> void:
+	if is_launched:
+		launch_timer -= delta
+		if launch_timer <= 0.0:
+			is_launched = false
+
 	if is_multiplayer_authority():
 		if not is_dead:
 			camera.global_position = Vector2(0, global_position.y)
@@ -159,14 +261,89 @@ func _process(delta: float) -> void:
 			if survivor:
 				camera.global_position.x = 0
 				camera.global_position.y = lerp(camera.global_position.y, survivor.global_position.y, 5.0 * delta)
-				
-	if velocity.length() > speed * 1.3 and not is_dead:
-		if abs(velocity.x) > abs(velocity.y):
-			sprite.scale = Vector2(26.0, 15.0)
+		
+		if shake_amount > 0.0:
+			shake_amount = max(0.0, shake_amount - shake_decay * delta)
+			camera.offset = Vector2(
+				randf_range(-shake_amount, shake_amount),
+				randf_range(-shake_amount, shake_amount)
+			)
 		else:
-			sprite.scale = Vector2(15.0, 26.0)
+			camera.offset = Vector2.ZERO
+				
+	var base_scale = Vector2(3.75, 3.75)
+	if velocity.length() > speed * 1.3 and not is_dead and not is_dashing and spawn_intro_timer <= 0.0:
+		if abs(velocity.x) > abs(velocity.y):
+			sprite.scale = base_scale * Vector2(1.3, 0.75)
+		else:
+			sprite.scale = base_scale * Vector2(0.75, 1.3)
 	else:
-		sprite.scale = Vector2(20.0, 20.0)
+		sprite.scale = base_scale
+
+	if is_suffocating and not is_dead:
+		var pulse = (sin(Time.get_ticks_msec() * 0.015) + 1.0) * 0.5
+		sprite.self_modulate = original_color.lerp(Color(0.9, 0.1, 0.1), pulse)
+	elif is_stunned and not is_dead:
+		var pulse = (sin(Time.get_ticks_msec() * 0.04) + 1.0) * 0.5
+		sprite.self_modulate = original_color.lerp(Color(1.0, 1.0, 0.2), pulse)
+	else:
+		sprite.self_modulate = original_color
+
+	if not is_dead:
+		anim_time += delta
+		if spawn_intro_timer > 0.0:
+			spawn_intro_timer -= delta
+		if spawn_intro_timer > 0.0 or is_dashing or is_launched:
+			sprite.rotation = lerp_angle(sprite.rotation, 0.0, 10.0 * delta)
+		elif velocity.length() > 10.0:
+			var target_rotation = velocity.angle() + PI/2
+			sprite.rotation = lerp_angle(sprite.rotation, target_rotation, 8.0 * delta)
+		else:
+			sprite.rotation = lerp_angle(sprite.rotation, 0.0, 5.0 * delta)
+
+		if bubble_particles:
+			bubble_particles.emitting = true
+			if is_dashing or is_launched or spawn_intro_timer > 0.0:
+				bubble_particles.amount = 24
+				bubble_particles.lifetime = 0.4
+				bubble_particles.speed_scale = 2.0
+			elif velocity.length() > 10.0:
+				bubble_particles.amount = 12
+				bubble_particles.lifetime = 0.6
+				bubble_particles.speed_scale = 1.0
+			else:
+				bubble_particles.emitting = false
+
+		if spawn_intro_timer > 0.0:
+			var t = 1.0 - spawn_intro_timer
+			var frame_idx = 10 + int(fmod(t * 14.0, 7.0))
+			sprite.frame_coords = Vector2i(clamp(frame_idx, 10, 16), 0)
+		elif is_dashing:
+			var t = 1.0 - (dash_timer / dash_duration)
+			var frame_idx = 10 + int(t * 7)
+			sprite.frame_coords = Vector2i(clamp(frame_idx, 10, 16), 0)
+		elif is_launched:
+			var t = 1.0 - (launch_timer / launch_duration_total)
+			var frame_idx = 10 + int(t * 14) % 7
+			sprite.frame_coords = Vector2i(clamp(frame_idx, 10, 16), 0)
+		elif is_stunned:
+			var frame_idx = int(anim_time * 24.0) % 20
+			sprite.frame_coords = Vector2i(frame_idx, 0)
+		elif velocity.length() > 10.0:
+			var speed_mult = 0.4 if is_suffocating else 1.0
+			var frame_idx = int(anim_time * 12.0 * speed_mult) % 8
+			sprite.frame_coords = Vector2i(frame_idx, 2)
+		else:
+			var idle_cycle = fmod(anim_time, 8.0)
+			if idle_cycle >= 6.0:
+				var frame_idx = int(anim_time * 10.0) % 20
+				sprite.frame_coords = Vector2i(frame_idx, 0)
+			else:
+				var frame_idx = int(anim_time * 6.0) % 10
+				sprite.frame_coords = Vector2i(frame_idx, 1)
+	else:
+		if bubble_particles:
+			bubble_particles.emitting = false
 
 func get_survivor() -> CharacterBody2D:
 	var parent = get_parent()
@@ -176,3 +353,60 @@ func get_survivor() -> CharacterBody2D:
 		if child is CharacterBody2D and child != self and "is_dead" in child and not child.is_dead:
 			return child
 	return null
+
+func start_suffocating() -> void:
+	if is_suffocating or is_dead:
+		return
+	is_suffocating = true
+	suffocate_time_left = 5.0
+	print(name, " started suffocating!")
+
+func stop_suffocating() -> void:
+	if not is_suffocating:
+		return
+	is_suffocating = false
+	print(name, " stopped suffocating!")
+
+
+
+@rpc("any_peer", "call_local", "reliable")
+func receive_shared_oxygen(amount: float, giver_id: int) -> void:
+	if is_multiplayer_authority():
+		if is_dead:
+			return
+		oxygen = min(max_oxygen, oxygen + amount)
+		if is_suffocating:
+			stop_suffocating()
+		var giver_node = get_parent().get_node_or_null(str(giver_id))
+		if giver_node and giver_node.has_method("deduct_oxygen"):
+			giver_node.deduct_oxygen.rpc_id(giver_id, amount)
+
+@rpc("any_peer", "call_local", "reliable")
+func deduct_oxygen(amount: float) -> void:
+	if is_multiplayer_authority():
+		oxygen = max(0.0, oxygen - amount)
+
+@rpc("any_peer", "call_local", "reliable")
+func shock(duration: float) -> void:
+	if is_dead:
+		return
+	is_stunned = true
+	stun_time_left = max(stun_time_left, duration)
+	is_dashing = false
+	velocity = Vector2.ZERO
+	print(name, " was shocked!")
+
+@rpc("any_peer", "call_local", "reliable")
+func apply_slingshot_launch(launch_vel: Vector2) -> void:
+	if is_dead:
+		return
+	is_launched = true
+	launch_timer = launch_duration_total
+	launch_direction = launch_vel.normalized()
+	is_stunned = false
+	is_suffocating = false
+	suffocate_time_left = 5.0
+	
+	if is_multiplayer_authority():
+		velocity = launch_vel
+		shake_camera(12.0, 0.4)
