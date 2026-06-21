@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://df5s7hcl8vclp"]
+[gd_scene format=3 uid="uid://df5s7hcl8vclp"]
 
 [ext_resource type="Script" path="res://scripts/clippy.gd" id="1_clippy"]
 [ext_resource type="Shader" path="res://scripts/clippy_black_key.gdshader" id="2_shader"]
