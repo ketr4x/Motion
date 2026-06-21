@@ -52,7 +52,16 @@ func _unhandled_input(event: InputEvent) -> void:
 				break
 				
 		if local_player_here:
-			is_opened = true
-			playing_anim = true
-			anim_frame = 3
-			anim_timer = 0.0
+			if multiplayer.has_multiplayer_peer():
+				open_chest.rpc()
+			else:
+				open_chest()
+
+@rpc("any_peer", "call_local", "reliable")
+func open_chest() -> void:
+	if is_opened:
+		return
+	is_opened = true
+	playing_anim = true
+	anim_frame = 3
+	anim_timer = 0.0

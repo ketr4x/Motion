@@ -21,11 +21,14 @@ var room_code = ""
 var is_host = false
 var _ws_was_connected = false
 var connection_in_progress = false
+var _pending_candidates = []
+var _remote_description_set = false
 
 var last_seed: int = 0
 var last_time: float = 0.0
 var show_ending_screen: bool = false
 var ending_victory: bool = false
+var game_ready_peers = []
 
 func get_best_time() -> float:
 	var config = ConfigFile.new()
@@ -104,20 +107,13 @@ func _host_webrtc() -> bool:
 		_reset_connection()
 		return false
 		
+	_start_connection_timeout(45.0)
 	connection_status.emit(true, "Connecting to signaling server...")
 	return true
 
 func join_game(player_name: String, ip: String = DEFAULT_IP, port: int = DEFAULT_PORT) -> void:
 	local_player_name = player_name
 	host_ip = ip
-	
-	connection_in_progress = true
-	var timer = get_tree().create_timer(10.0)
-	timer.timeout.connect(func():
-		if connection_in_progress:
-			connection_status.emit(false, "Connection timed out.")
-			_reset_connection()
-	)
 	
 	var use_enet = false
 	if ip.contains(".") or ip.to_lower() == "localhost" or ip.to_lower() == "lan":
@@ -129,9 +125,11 @@ func join_game(player_name: String, ip: String = DEFAULT_IP, port: int = DEFAULT
 		
 	if use_enet:
 		is_webrtc_active = false
+		_start_connection_timeout(15.0)
 		_join_enet(ip, port)
 	else:
 		is_webrtc_active = true
+		_start_connection_timeout(45.0)
 		_join_webrtc(ip)
 
 func _join_enet(ip: String, port: int) -> void:
@@ -179,6 +177,7 @@ func leave_game() -> void:
 
 func _reset_connection() -> void:
 	connection_in_progress = false
+	is_host = false
 	if ws_peer:
 		ws_peer.close()
 		ws_peer = null
@@ -186,6 +185,18 @@ func _reset_connection() -> void:
 	rtc_connection = null
 	rtc_peer = null
 	multiplayer.multiplayer_peer = null
+	_remote_description_set = false
+	_pending_candidates.clear()
+	game_ready_peers.clear()
+
+func _start_connection_timeout(duration: float) -> void:
+	connection_in_progress = true
+	var timer = get_tree().create_timer(duration)
+	timer.timeout.connect(func():
+		if connection_in_progress:
+			connection_status.emit(false, "Connection timed out. Signaling server may be waking up (Render spin-down), please try again.")
+			_reset_connection()
+	)
 
 func _process(_delta: float) -> void:
 	if ws_peer:
@@ -219,6 +230,7 @@ func _on_signaling_message(message_str: String) -> void:
 	
 	match msg.type:
 		"hosted":
+			connection_in_progress = false
 			room_code = msg.room
 			connection_status.emit(true, "Hosting on WebRTC. Code: " + room_code)
 			players[1] = { "name": local_player_name, "ready": true }
@@ -253,7 +265,11 @@ func _create_rtc_connection(target_peer_id: int) -> void:
 	rtc_connection = WebRTCPeerConnection.new()
 	rtc_connection.initialize({
 		"iceServers": [
-			{ "urls": ["stun:stun.l.google.com:19302"] }
+			{ "urls": ["stun:stun.l.google.com:19302"] },
+			{ "urls": ["stun:stun1.l.google.com:19302"] },
+			{ "urls": ["stun:stun2.l.google.com:19302"] },
+			{ "urls": ["stun:stun3.l.google.com:19302"] },
+			{ "urls": ["stun:stun4.l.google.com:19302"] }
 		]
 	})
 	
@@ -285,10 +301,25 @@ func _create_rtc_connection(target_peer_id: int) -> void:
 func _handle_rtc_signal(data: Dictionary) -> void:
 	if rtc_connection == null: return
 	
-	if data.type == "offer" or data.type == "answer":
+	if data.type == "offer":
 		rtc_connection.set_remote_description(data.type, data.sdp)
+		_remote_description_set = true
+		_flush_pending_candidates()
+	elif data.type == "answer":
+		rtc_connection.set_remote_description(data.type, data.sdp)
+		_remote_description_set = true
+		_flush_pending_candidates()
 	elif data.type == "candidate":
-		rtc_connection.add_ice_candidate(data.media, data.index, data.name)
+		if _remote_description_set:
+			rtc_connection.add_ice_candidate(data.media, data.index, data.name)
+		else:
+			_pending_candidates.append(data)
+
+func _flush_pending_candidates() -> void:
+	if rtc_connection == null: return
+	for candidate in _pending_candidates:
+		rtc_connection.add_ice_candidate(candidate.media, candidate.index, candidate.name)
+	_pending_candidates.clear()
 
 func _on_peer_connected(id: int) -> void:
 	if multiplayer.is_server():
@@ -335,6 +366,8 @@ func sync_players(new_players: Dictionary) -> void:
 
 func _on_peer_disconnected(id: int) -> void:
 	players.erase(id)
+	if id in game_ready_peers:
+		game_ready_peers.erase(id)
 	player_list_changed.emit()
 
 func _on_connected_to_server() -> void:
@@ -358,7 +391,21 @@ func start_game() -> void:
 
 @rpc("authority", "reliable", "call_local")
 func load_game_scene() -> void:
+	game_ready_peers.clear()
 	var current_scene = get_tree().current_scene
 	if current_scene and current_scene.has_method("play_start_transition"):
 		await current_scene.play_start_transition()
 	get_tree().change_scene_to_file("res://scenes/game.tscn")
+
+@rpc("any_peer", "call_local", "reliable")
+func notify_game_ready(peer_id: int) -> void:
+	if multiplayer.is_server():
+		var sender_id = multiplayer.get_remote_sender_id()
+		if sender_id == 0:
+			sender_id = peer_id
+		if not game_ready_peers.has(sender_id):
+			game_ready_peers.append(sender_id)
+		
+		var game_node = get_tree().current_scene
+		if game_node and game_node.name == "Game" and game_node.has_method("register_ready_peer"):
+			game_node.register_ready_peer(sender_id)
