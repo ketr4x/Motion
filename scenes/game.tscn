@@ -51,7 +51,7 @@ position = Vector2(50, 0)
 [node name="LevelGenerator" type="Node2D" parent="." unique_id=360970816]
 script = ExtResource("2_lvlgen")
 
-[node name="WallLeft" type="ColorRect" parent="." unique_id=927809005]
+[node name="WallLeft" type="ColorRect" parent="." unique_id=1256045962]
 z_index = -9
 offset_left = -2300.0
 offset_top = -200000.0
@@ -59,7 +59,7 @@ offset_right = -300.0
 offset_bottom = 200000.0
 color = Color(0.01, 0.02, 0.04, 1)
 
-[node name="WallRight" type="ColorRect" parent="." unique_id=1993652061]
+[node name="WallRight" type="ColorRect" parent="." unique_id=847343472]
 z_index = -9
 offset_left = 300.0
 offset_top = -200000.0
