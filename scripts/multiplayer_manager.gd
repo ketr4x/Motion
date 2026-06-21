@@ -9,6 +9,28 @@ const DEFAULT_IP = "127.0.0.1"
 var players = {}
 var local_player_name = "Player"
 
+var last_seed: int = 0
+var last_time: float = 0.0
+var show_ending_screen: bool = false
+var ending_victory: bool = false
+
+func get_best_time() -> float:
+	var config = ConfigFile.new()
+	var err = config.load("user://save_data.cfg")
+	if err == OK:
+		return config.get_value("stats", "best_time", 999999.0)
+	return 999999.0
+
+func save_best_time(new_time: float) -> bool:
+	var config = ConfigFile.new()
+	config.load("user://save_data.cfg")
+	var current_best = config.get_value("stats", "best_time", 999999.0)
+	if new_time < current_best:
+		config.set_value("stats", "best_time", new_time)
+		config.save("user://save_data.cfg")
+		return true
+	return false
+
 func _ready() -> void:
 	multiplayer.peer_connected.connect(_on_peer_connected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
@@ -25,7 +47,7 @@ func host_game(player_name: String, port: int = DEFAULT_PORT) -> bool:
 		return false
 	
 	multiplayer.multiplayer_peer = peer
-	players[1] = { "name": local_player_name }
+	players[1] = { "name": local_player_name, "ready": true }
 	player_list_changed.emit()
 	connection_status.emit(true, "Hosting on port " + str(port))
 	return true
@@ -51,11 +73,22 @@ func _on_peer_connected(id: int) -> void:
 @rpc("any_peer", "reliable")
 func register_player(p_name: String) -> void:
 	var sender_id = multiplayer.get_remote_sender_id()
-	players[sender_id] = { "name": p_name }
+	players[sender_id] = { "name": p_name, "ready": false }
 	player_list_changed.emit()
 	
 	if multiplayer.is_server():
 		sync_players.rpc(players)
+
+@rpc("any_peer", "call_local", "reliable")
+func toggle_ready() -> void:
+	var sender_id = multiplayer.get_remote_sender_id()
+	if sender_id == 0:
+		sender_id = multiplayer.get_unique_id()
+	if sender_id in players:
+		players[sender_id]["ready"] = !players[sender_id].get("ready", false)
+		player_list_changed.emit()
+		if multiplayer.is_server():
+			sync_players.rpc(players)
 
 @rpc("authority", "reliable")
 func sync_players(new_players: Dictionary) -> void:
