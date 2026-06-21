@@ -125,7 +125,10 @@ func open_gate() -> void:
 	tween.parallel().tween_property(lever_b_label, "modulate:a", 0.0, 0.4)
 	tween.parallel().tween_property(gate_label, "modulate:a", 0.0, 0.4)
 	
-	tween.tween_callback(queue_free)
+	tween.tween_callback(func():
+		if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
+			queue_free()
+	)
 
 func update_visuals() -> void:
 	if gate_open:

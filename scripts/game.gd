@@ -105,6 +105,11 @@ func spawn_players() -> void:
 func setup_hud() -> void:
 	name_label.text = MultiplayerManager.local_player_name
 	oxygen_bar_fill = oxygen_bar.get_theme_stylebox("fill") as StyleBoxFlat
+	
+	var clippy_scene = load("res://scenes/clippy.tscn")
+	if clippy_scene:
+		var clippy_instance = clippy_scene.instantiate()
+		hud_canvas.add_child(clippy_instance)
 
 func _process(_delta: float) -> void:
 	if not game_ended and multiplayer.has_multiplayer_peer() and multiplayer.is_server():
