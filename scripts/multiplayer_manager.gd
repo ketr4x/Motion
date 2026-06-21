@@ -194,7 +194,7 @@ func _process(_delta: float) -> void:
 				_ws_was_connected = true
 				_on_signaling_connected()
 				
-			while ws_peer.get_available_packet_count() > 0:
+			while ws_peer and ws_peer.get_available_packet_count() > 0:
 				var packet = ws_peer.get_packet()
 				_on_signaling_message(packet.get_string_from_utf8())
 		elif state == WebSocketPeer.STATE_CLOSED:

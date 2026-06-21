@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://da3qj5xlh86ye" path="res://scripts/game.gd" id="1_e2o6t"]
 [ext_resource type="Script" uid="uid://lv4muoupgwg1" path="res://scripts/level_generator.gd" id="2_lvlgen"]
 [ext_resource type="FontFile" uid="uid://bbekmcubtnhie" path="res://assets/dogica.otf" id="3_font"]
+[ext_resource type="Shader" uid="uid://cusbrj2v2qhh7" path="res://scripts/retro_crt.gdshader" id="7_crt_shader"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_bg"]
 
@@ -24,6 +25,15 @@ border_color = Color(0.2, 0.4, 0.6, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fg"]
 bg_color = Color(0.2, 0.8, 0.4, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_crt"]
+shader = ExtResource("7_crt_shader")
+shader_parameter/desaturation = 0.1
+shader_parameter/tint_factor = 0.03
+shader_parameter/tint_color = Color(0.95, 0.95, 0.9, 1)
+shader_parameter/chromatic_aberration = 0.0008
+shader_parameter/scanline_intensity = 0.04
+shader_parameter/noise_intensity = 0.01
 
 [node name="Game" type="Node2D" unique_id=1168081893]
 script = ExtResource("1_e2o6t")
@@ -126,3 +136,13 @@ theme_override_styles/background = SubResource("StyleBoxFlat_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_fg")
 value = 100.0
 show_percentage = false
+
+[node name="CRTOverlay" type="ColorRect" parent="HUD" unique_id=267535635]
+material = SubResource("ShaderMaterial_crt")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
