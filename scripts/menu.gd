@@ -43,6 +43,7 @@ const LOGO_BOB_DURATION := 0.75
 @onready var player_list_label: Label = $CanvasLayer/LobbyPanel/VBox/PlayerList
 @onready var start_button: Button = $CanvasLayer/LobbyPanel/VBox/ButtonsBox/StartButton
 @onready var leave_button: Button = $CanvasLayer/LobbyPanel/VBox/ButtonsBox/LeaveButton
+@onready var team_input: LineEdit = $CanvasLayer/LobbyPanel/VBox/TeamBox/TeamInput
 
 @onready var settings_panel: PanelContainer = $CanvasLayer/SettingsPanel
 @onready var settings_back_button: Button = $CanvasLayer/SettingsPanel/VBox/SettingsBackButton
@@ -192,6 +193,9 @@ func _setup_ui() -> void:
 	start_button.pressed.connect(_on_start_pressed)
 	leave_button.pressed.connect(_on_leave_pressed)
 	settings_back_button.pressed.connect(_on_settings_back_pressed)
+	
+	team_input.text_changed.connect(_on_team_name_changed)
+	MultiplayerManager.team_name_changed.connect(_on_team_name_changed_from_manager)
 
 	window_title_bar.gui_input.connect(_on_title_bar_gui_input)
 	min_btn.pressed.connect(_on_window_close_or_min)
@@ -254,6 +258,9 @@ func _on_host_pressed() -> void:
 	start_button.visible = true
 	pause_background()
 	
+	MultiplayerManager.team_name = ""
+	team_input.text = ""
+	
 	if not MultiplayerManager.host_game(name_text, ip_input.text):
 		lobby_panel.visible = false
 		ui_container.visible = true
@@ -285,6 +292,9 @@ func _on_join_pressed() -> void:
 	ip_input.editable = false
 	name_input.editable = false
 
+	MultiplayerManager.team_name = ""
+	team_input.text = ""
+
 	MultiplayerManager.join_game(name_text, ip_text)
 
 func _on_start_pressed() -> void:
@@ -311,6 +321,16 @@ func _on_leave_pressed() -> void:
 	name_input.editable = true
 
 func _on_player_list_changed() -> void:
+	var is_host = true
+	if multiplayer.multiplayer_peer != null:
+		is_host = multiplayer.is_server()
+	
+	team_input.editable = is_host
+	if is_host:
+		team_input.placeholder_text = "Enter team name..."
+	else:
+		team_input.placeholder_text = "Waiting for host to set team name..."
+
 	var list_text := "Players connected:\n"
 	var all_ready = true
 	var players_dict = MultiplayerManager.players
@@ -325,7 +345,6 @@ func _on_player_list_changed() -> void:
 			all_ready = false
 
 	if multiplayer.multiplayer_peer != null:
-		var is_host = multiplayer.is_server()
 		if is_host:
 			if MultiplayerManager.is_webrtc_active:
 				list_text += "\nRoom Code: " + MultiplayerManager.room_code
@@ -356,7 +375,8 @@ func _on_player_list_changed() -> void:
 		if local_id == 1:
 			start_button.visible = true
 			start_button.text = "Start Game"
-			start_button.disabled = not all_ready or not has_client
+			var team_name_ok = team_input.text.strip_edges() != ""
+			start_button.disabled = not all_ready or not has_client or not team_name_ok
 		else:
 			start_button.visible = true
 			start_button.disabled = false
@@ -452,7 +472,7 @@ func _setup_ending() -> void:
 			ending_best_time_label.text = "Best Time: --:--.--"
 
 
-		ending_wr_label.text = "WR: 00:54.21"
+		ending_wr_label.text = "WR: --:--.--"
 
 		# Animated entrance
 		ending_panel.modulate = Color(1, 1, 1, 0)
@@ -475,11 +495,11 @@ func _setup_ending() -> void:
 func _update_talo_leaderboard() -> void:
 	leaderboard_list_label.text = "Connecting to Talo..."
 
-	var p_name = MultiplayerManager.local_player_name
-	if p_name.strip_edges() == "":
-		p_name = "Player"
+	var t_name = MultiplayerManager.team_name
+	if t_name.strip_edges() == "":
+		t_name = "Team"
 
-	var player = await Talo.players.identify("username", p_name)
+	var player = await Talo.players.identify("username", t_name)
 	if player == null:
 		leaderboard_list_label.text = "Failed to authenticate with Talo.\nMake sure settings.cfg has a valid access_key."
 		return
@@ -501,6 +521,7 @@ func _update_talo_leaderboard() -> void:
 
 	if entries_page.entries.size() == 0:
 		leaderboard_list_label.text = "No scores submitted yet!\nBe the first to set a record!"
+		ending_wr_label.text = "WR: --:--.--"
 		return
 
 	var list_text = ""
@@ -509,6 +530,8 @@ func _update_talo_leaderboard() -> void:
 		var name_str = entry.player_alias.identifier
 		var score_str = format_time(entry.score)
 		list_text += "%d. %s - %s\n" % [rank, name_str, score_str]
+		if rank == 1:
+			ending_wr_label.text = "WR: %s" % score_str
 		rank += 1
 
 	leaderboard_list_label.text = list_text
@@ -524,3 +547,17 @@ func format_time(seconds: float) -> String:
 	var secs = int(seconds) % 60
 	var msecs = int((seconds - int(seconds)) * 100)
 	return "%02d:%02d.%02d" % [minutes, secs, msecs]
+
+func _on_team_name_changed(new_text: String) -> void:
+	if multiplayer.has_multiplayer_peer():
+		if multiplayer.is_server():
+			MultiplayerManager.set_team_name(new_text)
+	else:
+		MultiplayerManager.team_name = new_text
+	_on_player_list_changed()
+
+func _on_team_name_changed_from_manager(new_name: String) -> void:
+	if not multiplayer.has_multiplayer_peer() or not multiplayer.is_server():
+		if team_input.text != new_name:
+			team_input.text = new_name
+			_on_player_list_changed()
