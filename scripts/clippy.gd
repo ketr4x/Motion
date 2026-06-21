@@ -60,7 +60,15 @@ var vote_initiated_by: int = 0
 var has_voted: bool = false
 var has_suggested_reroll: bool = false
 
+var dragging_window: bool = false
+var drag_offset: Vector2 = Vector2.ZERO
+
+@onready var window_title_bar: ColorRect = $Content/WindowTitleBar
+
 func _ready() -> void:
+	if window_title_bar:
+		window_title_bar.gui_input.connect(_on_title_bar_gui_input)
+
 	modulate.a = 1.0
 	reveal_progress = 0.0
 	reveal_target = 0.0
@@ -311,7 +319,7 @@ func check_game_state() -> void:
 		return
 	if local_player.oxygen < 30.0:
 		var oxygen_spot_nearby = false
-		for child in children:
+		for child in game_node.get_children():
 			if child.name.begins_with("Oxygen_") and child.get("is_active"):
 				var dist = local_player.global_position.distance_to(child.global_position)
 				if dist < 320.0:
@@ -323,7 +331,7 @@ func check_game_state() -> void:
 			trigger_tip("low_oxygen")
 		return
 	var teammate = null
-	for child in children:
+	for child in game_node.get_children():
 		if child is CharacterBody2D and child != local_player:
 			teammate = child
 			break
@@ -353,3 +361,14 @@ func check_game_state() -> void:
 			if dist_shoal < 280.0:
 				trigger_tip("shoal_fish")
 				break
+
+func _on_title_bar_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				dragging_window = true
+				drag_offset = event.global_position - global_position
+			else:
+				dragging_window = false
+	elif event is InputEventMouseMotion and dragging_window:
+		global_position = event.global_position - drag_offset

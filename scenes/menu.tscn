@@ -581,6 +581,7 @@ theme_override_constants/separation = 32
 
 [node name="EndingTitle" type="Label" parent="CanvasLayer/EndingPanel/VBox" unique_id=1185205875]
 layout_mode = 2
+mouse_filter = 0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("sb_win95_titlebar")
@@ -649,6 +650,7 @@ theme_override_constants/separation = 16
 
 [node name="LeaderboardTitle" type="Label" parent="CanvasLayer/LeaderboardPanel/VBox" unique_id=598079476]
 layout_mode = 2
+mouse_filter = 0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("sb_win95_titlebar")

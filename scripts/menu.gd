@@ -60,7 +60,13 @@ const LOGO_BOB_DURATION := 0.75
 @onready var ending_back_button: Button = $CanvasLayer/EndingPanel/VBox/EndingBackButton
 @onready var leaderboard_panel: PanelContainer = $CanvasLayer/LeaderboardPanel
 @onready var leaderboard_list_label: Label = $CanvasLayer/LeaderboardPanel/VBox/LeaderboardList
+@onready var ending_title: Label = $CanvasLayer/EndingPanel/VBox/EndingTitle
+@onready var leaderboard_title: Label = $CanvasLayer/LeaderboardPanel/VBox/LeaderboardTitle
 
+var dragging_ending_window := false
+var dragging_leaderboard_window := false
+var ending_drag_offset := Vector2.ZERO
+var leaderboard_drag_offset := Vector2.ZERO
 var clouds: Array[Sprite2D] = []
 var reflections: Array[Sprite2D] = []
 var logo_flash_timer: Timer
@@ -439,6 +445,10 @@ func _on_volume_changed(value: float) -> void:
 
 func _setup_ending() -> void:
 	ending_back_button.pressed.connect(_on_ending_back_pressed)
+	if ending_title:
+		ending_title.gui_input.connect(_on_ending_title_gui_input)
+	if leaderboard_title:
+		leaderboard_title.gui_input.connect(_on_leaderboard_title_gui_input)
 
 	if MultiplayerManager.show_ending_screen:
 		MultiplayerManager.show_ending_screen = false
@@ -535,6 +545,29 @@ func _update_talo_leaderboard() -> void:
 		rank += 1
 
 	leaderboard_list_label.text = list_text
+
+func _on_ending_title_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				dragging_ending_window = true
+				ending_drag_offset = event.global_position - ending_panel.global_position
+			else:
+				dragging_ending_window = false
+	elif event is InputEventMouseMotion and dragging_ending_window:
+		ending_panel.global_position = event.global_position - ending_drag_offset
+
+func _on_leaderboard_title_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				dragging_leaderboard_window = true
+				leaderboard_drag_offset = event.global_position - leaderboard_panel.global_position
+			else:
+				dragging_leaderboard_window = false
+	elif event is InputEventMouseMotion and dragging_leaderboard_window:
+		leaderboard_panel.global_position = event.global_position - leaderboard_drag_offset
+
 
 func _on_ending_back_pressed() -> void:
 	ending_panel.visible = false

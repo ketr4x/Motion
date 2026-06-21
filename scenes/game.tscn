@@ -10,20 +10,22 @@
 [sub_resource type="CanvasTexture" id="CanvasTexture_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0.02, 0.04, 0.08, 0.9)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.3, 0.65, 1, 1)
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
+bg_color = Color(0.75, 0.75, 0.75, 1)
+border_width_left = 3
+border_width_top = 3
+border_color = Color(1, 1, 1, 1)
+shadow_color = Color(0.1, 0.1, 0.1, 1)
+shadow_offset = Vector2(3, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0.1, 0.12, 0.16, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.2, 0.4, 0.6, 1)
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 2
+border_width_top = 2
+border_color = Color(0.3, 0.3, 0.3, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fg"]
 bg_color = Color(0.2, 0.8, 0.4, 1)
@@ -91,14 +93,32 @@ theme_override_constants/margin_bottom = 8
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HUD/MarginContainer/PanelContainer/MarginContainer" unique_id=1940166017]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 8
+
+[node name="WindowTitleBar" type="ColorRect" parent="HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+color = Color(0, 0, 0.501961, 1)
+
+[node name="TitleLabel" type="Label" parent="HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/WindowTitleBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 12
+text = "Stats.exe"
+vertical_alignment = 1
 
 [node name="InfoHBox" type="HBoxContainer" parent="HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1393329709]
 layout_mode = 2
 
 [node name="NameLabel" type="Label" parent="HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/InfoHBox" unique_id=773086098]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.75, 1, 1)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 14
 text = "Player"
@@ -109,7 +129,7 @@ size_flags_horizontal = 3
 
 [node name="DepthLabel" type="Label" parent="HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/InfoHBox" unique_id=1379580475]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 14
 text = "Depth: 0m"
