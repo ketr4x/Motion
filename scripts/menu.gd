@@ -247,11 +247,18 @@ func _on_host_pressed() -> void:
 	var name_text := name_input.text.strip_edges()
 	if name_text == "":
 		name_text = "Host"
-	if MultiplayerManager.host_game(name_text, ip_input.text):
-		ui_container.visible = false
-		lobby_panel.visible = true
-		start_button.visible = true
-		pause_background()
+	
+	ui_container.visible = false
+	lobby_panel.visible = true
+	player_list_label.text = "Status: Initializing connection...\n\n(Starting connection to signaling server...)"
+	start_button.visible = true
+	pause_background()
+	
+	if not MultiplayerManager.host_game(name_text, ip_input.text):
+		lobby_panel.visible = false
+		ui_container.visible = true
+		start_button.visible = false
+		resume_background()
 
 func _on_join_pressed() -> void:
 	if join_button.text == "Cancel":
@@ -371,6 +378,9 @@ func _on_connection_status(success: bool, message: String) -> void:
 		settings_button.disabled = false
 		ip_input.editable = true
 		name_input.editable = true
+	else:
+		if lobby_panel.visible and MultiplayerManager.players.is_empty():
+			player_list_label.text = "Status: " + message + "\n\n(This might take up to a minute if the signaling server is waking up...)"
 
 func _on_settings_pressed() -> void:
 	ui_container.visible = false
@@ -447,6 +457,7 @@ func _setup_ending() -> void:
 		# Animated entrance
 		ending_panel.modulate = Color(1, 1, 1, 0)
 		ending_panel.scale = Vector2(0.8, 0.8)
+		await get_tree().process_frame
 		ending_panel.pivot_offset = ending_panel.size / 2.0
 		var tween_end = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 		tween_end.tween_property(ending_panel, "modulate:a", 1.0, 0.5)
