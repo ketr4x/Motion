@@ -27,7 +27,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	time_passed += delta
-	if multiplayer.is_server():
+	if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
 		position.x += speed * delta
 		if position.x > 700:
 			queue_free()
