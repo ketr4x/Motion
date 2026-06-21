@@ -2,7 +2,7 @@
 
 Gra na hackathon Horizons Nexus.
 
-Dwuosobowa gra co-op podwodna w stylu retro pixelart. Tekstury będą customowe i zrobione ręcznie 16x16. Czcionka Cairopixel.
+Dwuosobowa gra co-op podwodna w stylu retro pixelart. Tekstury będą customowe i zrobione ręcznie 16x16. Czcionka dogica.otf.
 
 # Features
 

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://da3qj5xlh86ye" path="res://scripts/game.gd" id="1_e2o6t"]
 [ext_resource type="Script" uid="uid://lv4muoupgwg1" path="res://scripts/level_generator.gd" id="2_lvlgen"]
-[ext_resource type="FontFile" uid="uid://di8wo4lhpfqr5" path="res://assets/Cairopixel.ttf" id="3_font"]
+[ext_resource type="FontFile" uid="uid://bbekmcubtnhie" path="res://assets/dogica.otf" id="3_font"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_bg"]
 

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://coopgatetscn"]
 
 [ext_resource type="Script" path="res://scripts/coop_gate.gd" id="1_gate"]
-[ext_resource type="FontFile" uid="uid://di8wo4lhpfqr5" path="res://assets/Cairopixel.ttf" id="2_font"]
+[ext_resource type="FontFile" uid="uid://bbekmcubtnhie" path="res://assets/dogica.otf" id="2_font"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_barrier"]
 
