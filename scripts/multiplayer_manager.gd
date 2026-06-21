@@ -344,4 +344,7 @@ func start_game() -> void:
 
 @rpc("authority", "reliable", "call_local")
 func load_game_scene() -> void:
+	var current_scene = get_tree().current_scene
+	if current_scene and current_scene.has_method("play_start_transition"):
+		await current_scene.play_start_transition()
 	get_tree().change_scene_to_file("res://scenes/game.tscn")

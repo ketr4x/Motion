@@ -3,14 +3,14 @@ extends Node2D
 @export var jellyfish_scene: PackedScene = preload("res://scenes/jellyfish.tscn")
 @export var oxygen_spot_scene: PackedScene = preload("res://scenes/oxygen_spot.tscn")
 @export var coop_gate_scene: PackedScene = preload("res://scenes/coop_gate.tscn")
-@export var current_vent_scene: PackedScene = preload("res://scenes/current_vent.tscn")
 @export var bubble_boost_scene: PackedScene = preload("res://scenes/bubble_boost.tscn")
+@export var chest_scene: PackedScene = preload("res://scenes/level_end_chest.tscn")
 
 @export var start_depth: float = 300.0
 @export var end_depth: float = 3600.0
 @export var depth_interval: float = 180.0
-@export var x_min: float = -280.0
-@export var x_max: float = 280.0
+@export var x_min: float = -288.0
+@export var x_max: float = 288.0
 
 var level_seed: int = 0
 
@@ -31,14 +31,6 @@ func generate_level(p_seed: int) -> void:
 			gate.position = Vector2(0, current_depth)
 			gate.name = "CoopGate_" + str(int(current_depth))
 			get_parent().add_child(gate)
-			current_depth += depth_interval
-			continue
-
-		if abs(current_depth - 660.0) < 10.0 or abs(current_depth - 1800.0) < 10.0 or abs(current_depth - 3060.0) < 10.0:
-			var vent = current_vent_scene.instantiate()
-			vent.position = Vector2(0, current_depth)
-			vent.name = "CurrentVent_" + str(int(current_depth))
-			get_parent().add_child(vent)
 			current_depth += depth_interval
 			continue
 
@@ -87,5 +79,10 @@ func generate_level(p_seed: int) -> void:
 			boost.position = Vector2(boost_x, current_depth)
 			boost.name = "BubbleBoost_" + str(int(current_depth))
 			get_parent().add_child(boost)
-		
 		current_depth += depth_interval
+		
+	# Spawn chest at end depth
+	var chest = chest_scene.instantiate()
+	chest.position = Vector2(0, end_depth)
+	chest.name = "LevelEndChest"
+	get_parent().add_child(chest)

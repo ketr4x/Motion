@@ -146,15 +146,15 @@ func _process(_delta: float) -> void:
 			elapsed_sec = (Time.get_ticks_msec() - game_start_time) / 1000.0
 		depth_label.text = "Depth: " + str(depth_m) + "m | Time: " + format_time(elapsed_sec)
 		
-		if not game_ended:
-			var current_depth = local_player.position.y
-			if current_depth >= $LevelGenerator.end_depth:
-				game_ended = true
-				var elapsed_end = Time.get_ticks_msec() - game_start_time
-				if multiplayer.has_multiplayer_peer():
-					win_game.rpc(elapsed_end)
-				else:
-					win_game(elapsed_end)
+		# if not game_ended:
+		# 	var current_depth = local_player.position.y
+		# 	if current_depth >= $LevelGenerator.end_depth:
+		# 		game_ended = true
+		# 		var elapsed_end = Time.get_ticks_msec() - game_start_time
+		# 		if multiplayer.has_multiplayer_peer():
+		# 			win_game.rpc(elapsed_end)
+		# 		else:
+		# 			win_game(elapsed_end)
 		
 		if oxygen_bar:
 			oxygen_bar.value = local_player.oxygen
@@ -173,6 +173,22 @@ func format_time(seconds: float) -> String:
 	return "%02d:%02d.%02d" % [minutes, secs, msecs]
 
 @rpc("any_peer", "call_local", "reliable")
+func win_game_chest() -> void:
+	if game_ended:
+		return
+	game_ended = true
+	var elapsed_end = Time.get_ticks_msec() - game_start_time
+	if multiplayer.has_multiplayer_peer() and multiplayer.is_server():
+		win_game.rpc(elapsed_end)
+	elif not multiplayer.has_multiplayer_peer():
+		win_game(elapsed_end)
+
+@rpc("any_peer", "call_remote", "reliable")
+func request_win_game() -> void:
+	if multiplayer.is_server():
+		win_game_chest.rpc()
+
+@rpc("any_peer", "call_local", "reliable")
 func win_game(final_time_ms: float) -> void:
 	game_ended = true
 	MultiplayerManager.last_seed = current_seed
@@ -185,6 +201,17 @@ func win_game(final_time_ms: float) -> void:
 	call_deferred("_transition_to_menu")
 
 func _transition_to_menu() -> void:
+	var canvas = CanvasLayer.new()
+	canvas.layer = 100
+	add_child(canvas)
+	var color_rect = ColorRect.new()
+	color_rect.color = Color(0, 0, 0, 0)
+	color_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	canvas.add_child(color_rect)
+	
+	var tween = create_tween()
+	tween.tween_property(color_rect, "color:a", 1.0, 1.2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_QUAD)
+	await tween.finished
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 func player_died(peer_id: int) -> void:

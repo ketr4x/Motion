@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://da3qj5xlh86ye" path="res://scripts/game.gd" id="1_e2o6t"]
 [ext_resource type="Script" uid="uid://lv4muoupgwg1" path="res://scripts/level_generator.gd" id="2_lvlgen"]
 [ext_resource type="FontFile" uid="uid://bbekmcubtnhie" path="res://assets/dogica.otf" id="3_font"]
+[ext_resource type="Script" path="res://scripts/ocean_background.gd" id="4_oceanbg"]
 [ext_resource type="Shader" uid="uid://cusbrj2v2qhh7" path="res://scripts/retro_crt.gdshader" id="7_crt_shader"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_bg"]
@@ -51,27 +52,10 @@ position = Vector2(50, 0)
 [node name="LevelGenerator" type="Node2D" parent="." unique_id=360970816]
 script = ExtResource("2_lvlgen")
 
-[node name="WallLeft" type="ColorRect" parent="." unique_id=1256045962]
-z_index = -9
-offset_left = -2300.0
-offset_top = -200000.0
-offset_right = -300.0
-offset_bottom = 200000.0
-color = Color(0.01, 0.02, 0.04, 1)
 
-[node name="WallRight" type="ColorRect" parent="." unique_id=847343472]
-z_index = -9
-offset_left = 300.0
-offset_top = -200000.0
-offset_right = 2300.0
-offset_bottom = 200000.0
-color = Color(0.01, 0.02, 0.04, 1)
 
-[node name="OceanBG" type="Sprite2D" parent="." unique_id=1906316384]
-self_modulate = Color(0.02, 0.08, 0.18, 1)
-z_index = -10
-scale = Vector2(2000, 4000)
-texture = SubResource("CanvasTexture_bg")
+[node name="OceanBackground" type="Node2D" parent="."]
+script = ExtResource("4_oceanbg")
 
 [node name="ShoalTimer" type="Timer" parent="." unique_id=1240718529]
 wait_time = 6.0
