@@ -1,0 +1,83 @@
+[gd_scene format=3 uid="uid://btpp0v66kpk6d"]
+
+[ext_resource type="Script" path="res://scripts/current_vent.gd" id="1_vent"]
+[ext_resource type="FontFile" uid="uid://di8wo4lhpfqr5" path="res://assets/Cairopixel.ttf" id="2_font"]
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_vent"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vent_area"]
+size = Vector2(300, 60)
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_button"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_button_area"]
+size = Vector2(60, 40)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_vent"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:is_vent_active")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+
+[node name="CurrentVent" type="Node2D"]
+script = ExtResource("1_vent")
+
+[node name="VentArea" type="Area2D" parent="."]
+position = Vector2(-150, 0)
+collision_layer = 0
+collision_mask = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="VentArea"]
+self_modulate = Color(0.2, 0.5, 0.8, 1)
+scale = Vector2(40, 60)
+texture = SubResource("CanvasTexture_vent")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="VentArea"]
+position = Vector2(170, 0)
+shape = SubResource("RectangleShape2D_vent_area")
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="VentArea"]
+position = Vector2(20, 0)
+amount = 25
+lifetime = 1.2
+direction = Vector2(1, 0)
+spread = 5.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 180.0
+initial_velocity_max = 280.0
+emission_shape = 3
+emission_box_extents = Vector3(1, 25, 1)
+scale_amount_min = 2.0
+scale_amount_max = 4.0
+color = Color(0.4, 0.7, 1, 0.4)
+
+[node name="ButtonArea" type="Area2D" parent="."]
+position = Vector2(240, 10)
+collision_layer = 0
+collision_mask = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="ButtonArea"]
+self_modulate = Color(0.8, 0.3, 0.3, 1)
+scale = Vector2(50, 15)
+texture = SubResource("CanvasTexture_button")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ButtonArea"]
+position = Vector2(0, -10)
+shape = SubResource("RectangleShape2D_button_area")
+
+[node name="Label" type="Label" parent="ButtonArea"]
+offset_left = -75.0
+offset_top = -45.0
+offset_right = 75.0
+offset_bottom = -28.0
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 12
+text = "STAND HERE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_vent")

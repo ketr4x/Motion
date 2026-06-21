@@ -31,6 +31,11 @@ var dash_dir: Vector2 = Vector2.ZERO
 var was_shift_pressed: bool = false
 var was_e_pressed: bool = false
 
+var is_launched: bool = false
+var launch_timer: float = 0.0
+var launch_duration_total: float = 0.4
+var launch_direction: Vector2 = Vector2.ZERO
+
 @onready var camera: Camera2D = $Camera2D
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var bubble_particles: CPUParticles2D = %BubbleParticles
@@ -71,6 +76,16 @@ func _physics_process(delta: float) -> void:
 		position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
 		return
 
+	if is_launched:
+		launch_timer -= delta
+		if launch_timer <= 0.0:
+			is_launched = false
+		else:
+			velocity = launch_direction * (dash_speed * 1.5) * (launch_timer / launch_duration_total + 0.5)
+			move_and_slide()
+			position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
+			return
+
 	if is_suffocating:
 		suffocate_time_left -= delta
 		if suffocate_time_left <= 0.0:
@@ -95,6 +110,15 @@ func _physics_process(delta: float) -> void:
 			velocity = dash_dir * dash_speed
 			move_and_slide()
 			position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
+			
+			var teammate = get_survivor()
+			if teammate and not teammate.is_dead:
+				var dist = global_position.distance_to(teammate.global_position)
+				if dist < 65.0:
+					teammate.apply_slingshot_launch.rpc(dash_dir * (dash_speed * 1.5))
+					is_dashing = false
+					dash_timer = 0.0
+					velocity = -dash_dir * 120.0
 			return
 
 	var input_dir = Vector2.ZERO
@@ -156,7 +180,10 @@ func _physics_process(delta: float) -> void:
 			if dist < 50.0:
 				var other_peer_id = teammate.name.to_int()
 				if other_peer_id > 0:
-					teammate.receive_shared_oxygen.rpc_id(other_peer_id, 30.0, multiplayer.get_unique_id())
+					if multiplayer.has_multiplayer_peer():
+						teammate.receive_shared_oxygen.rpc_id(other_peer_id, 30.0, multiplayer.get_unique_id())
+					else:
+						teammate.receive_shared_oxygen(30.0, 1)
 
 	if is_multiplayer_authority() and oxygen > 0:
 		var current_depletion = depletion_rate
@@ -174,7 +201,9 @@ func recharge_oxygen() -> void:
 			stop_suffocating()
 
 func die() -> void:
-	if is_multiplayer_authority() or multiplayer.is_server():
+	if not multiplayer.has_multiplayer_peer():
+		_die_rpc()
+	elif is_multiplayer_authority() or multiplayer.is_server():
 		_die_rpc.rpc()
 
 @rpc("any_peer", "call_local", "reliable")
@@ -219,6 +248,11 @@ func shake_camera(intensity: float, duration: float) -> void:
 		shake_decay = intensity / duration
 
 func _process(delta: float) -> void:
+	if is_launched:
+		launch_timer -= delta
+		if launch_timer <= 0.0:
+			is_launched = false
+
 	if is_multiplayer_authority():
 		if not is_dead:
 			camera.global_position = Vector2(0, global_position.y)
@@ -228,7 +262,6 @@ func _process(delta: float) -> void:
 				camera.global_position.x = 0
 				camera.global_position.y = lerp(camera.global_position.y, survivor.global_position.y, 5.0 * delta)
 		
-		# Camera shake logic
 		if shake_amount > 0.0:
 			shake_amount = max(0.0, shake_amount - shake_decay * delta)
 			camera.offset = Vector2(
@@ -238,7 +271,6 @@ func _process(delta: float) -> void:
 		else:
 			camera.offset = Vector2.ZERO
 				
-	# Scale logic: adjust base scale for 16x16 sprites scaled 3x and apply squash/stretch
 	var base_scale = Vector2(3.75, 3.75)
 	if velocity.length() > speed * 1.3 and not is_dead and not is_dashing and spawn_intro_timer <= 0.0:
 		if abs(velocity.x) > abs(velocity.y):
@@ -257,14 +289,11 @@ func _process(delta: float) -> void:
 	else:
 		sprite.self_modulate = original_color
 
-	# Update animation and bubble particles
 	if not is_dead:
 		anim_time += delta
 		if spawn_intro_timer > 0.0:
 			spawn_intro_timer -= delta
-
-		# Rotation logic
-		if spawn_intro_timer > 0.0 or is_dashing:
+		if spawn_intro_timer > 0.0 or is_dashing or is_launched:
 			sprite.rotation = lerp_angle(sprite.rotation, 0.0, 10.0 * delta)
 		elif velocity.length() > 10.0:
 			var target_rotation = velocity.angle() + PI/2
@@ -272,10 +301,9 @@ func _process(delta: float) -> void:
 		else:
 			sprite.rotation = lerp_angle(sprite.rotation, 0.0, 5.0 * delta)
 
-		# Bubble particles control
 		if bubble_particles:
 			bubble_particles.emitting = true
-			if is_dashing or spawn_intro_timer > 0.0:
+			if is_dashing or is_launched or spawn_intro_timer > 0.0:
 				bubble_particles.amount = 24
 				bubble_particles.lifetime = 0.4
 				bubble_particles.speed_scale = 2.0
@@ -286,29 +314,26 @@ func _process(delta: float) -> void:
 			else:
 				bubble_particles.emitting = false
 
-		# Frame selection based on state
 		if spawn_intro_timer > 0.0:
-			# Play diving salto flip (Row 1/row 0, frames 10-16)
-			var t = 1.0 - spawn_intro_timer # 0.0 to 1.0
-			var frame_idx = 10 + int(fmod(t * 14.0, 7.0)) # 2 complete flips over 1.0s
+			var t = 1.0 - spawn_intro_timer
+			var frame_idx = 10 + int(fmod(t * 14.0, 7.0))
 			sprite.frame_coords = Vector2i(clamp(frame_idx, 10, 16), 0)
 		elif is_dashing:
-			# Play fast dash flip (Row 1/row 0, frames 10-16)
-			var t = 1.0 - (dash_timer / dash_duration) # 0.0 to 1.0
+			var t = 1.0 - (dash_timer / dash_duration)
 			var frame_idx = 10 + int(t * 7)
 			sprite.frame_coords = Vector2i(clamp(frame_idx, 10, 16), 0)
+		elif is_launched:
+			var t = 1.0 - (launch_timer / launch_duration_total)
+			var frame_idx = 10 + int(t * 14) % 7
+			sprite.frame_coords = Vector2i(clamp(frame_idx, 10, 16), 0)
 		elif is_stunned:
-			# Chaotic stun jitter from Row 1
 			var frame_idx = int(anim_time * 24.0) % 20
 			sprite.frame_coords = Vector2i(frame_idx, 0)
 		elif velocity.length() > 10.0:
-			# Swimming: Row 3 (row 2, 8 frames)
 			var speed_mult = 0.4 if is_suffocating else 1.0
 			var frame_idx = int(anim_time * 12.0 * speed_mult) % 8
 			sprite.frame_coords = Vector2i(frame_idx, 2)
 		else:
-			# Idle: Row 2 (row 1, 10 frames)
-			# Every 8 seconds of idle, play a random idle-break variant from Row 1 for 2 seconds
 			var idle_cycle = fmod(anim_time, 8.0)
 			if idle_cycle >= 6.0:
 				var frame_idx = int(anim_time * 10.0) % 20
@@ -370,3 +395,18 @@ func shock(duration: float) -> void:
 	is_dashing = false
 	velocity = Vector2.ZERO
 	print(name, " was shocked!")
+
+@rpc("any_peer", "call_local", "reliable")
+func apply_slingshot_launch(launch_vel: Vector2) -> void:
+	if is_dead:
+		return
+	is_launched = true
+	launch_timer = launch_duration_total
+	launch_direction = launch_vel.normalized()
+	is_stunned = false
+	is_suffocating = false
+	suffocate_time_left = 5.0
+	
+	if is_multiplayer_authority():
+		velocity = launch_vel
+		shake_camera(12.0, 0.4)

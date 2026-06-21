@@ -36,7 +36,7 @@ func _ready() -> void:
 	update_visuals()
 
 func _process(delta: float) -> void:
-	if multiplayer.is_server() and not gate_open:
+	if (not multiplayer.has_multiplayer_peer() or multiplayer.is_server()) and not gate_open:
 		var changed = false
 		if lever_a_active:
 			lever_a_timer -= delta
@@ -53,25 +53,31 @@ func _process(delta: float) -> void:
 				changed = true
 				
 		if changed:
-			sync_lever_states.rpc(lever_a_active, lever_a_timer, lever_b_active, lever_b_timer)
+			if multiplayer.has_multiplayer_peer():
+				sync_lever_states.rpc(lever_a_active, lever_a_timer, lever_b_active, lever_b_timer)
 	else:
 		if lever_a_active and lever_a_timer > 0.0:
 			lever_a_timer = max(0.0, lever_a_timer - delta)
 		if lever_b_active and lever_b_timer > 0.0:
 			lever_b_timer = max(0.0, lever_b_timer - delta)
 				
-	# Client input check
 	if not gate_open:
 		if local_in_lever_a and Input.is_key_pressed(KEY_E) and not lever_a_active:
-			request_activate_lever.rpc_id(1, "A")
+			if multiplayer.has_multiplayer_peer():
+				request_activate_lever.rpc_id(1, "A")
+			else:
+				request_activate_lever("A")
 		elif local_in_lever_b and Input.is_key_pressed(KEY_E) and not lever_b_active:
-			request_activate_lever.rpc_id(1, "B")
+			if multiplayer.has_multiplayer_peer():
+				request_activate_lever.rpc_id(1, "B")
+			else:
+				request_activate_lever("B")
 			
 	update_visuals()
 
 @rpc("any_peer", "call_local", "reliable")
 func request_activate_lever(lever_id: String) -> void:
-	if not multiplayer.is_server():
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		return
 	if gate_open:
 		return
@@ -83,10 +89,14 @@ func request_activate_lever(lever_id: String) -> void:
 		lever_b_active = true
 		lever_b_timer = activation_window
 		
-	sync_lever_states.rpc(lever_a_active, lever_a_timer, lever_b_active, lever_b_timer)
+	if multiplayer.has_multiplayer_peer():
+		sync_lever_states.rpc(lever_a_active, lever_a_timer, lever_b_active, lever_b_timer)
 	
 	if lever_a_active and lever_b_active:
-		open_gate.rpc()
+		if multiplayer.has_multiplayer_peer():
+			open_gate.rpc()
+		else:
+			open_gate()
 
 @rpc("authority", "call_local", "reliable")
 func sync_lever_states(a_state: bool, a_time: float, b_state: bool, b_time: float) -> void:
@@ -100,25 +110,21 @@ func open_gate() -> void:
 	gate_open = true
 	gate_collision.set_deferred("disabled", true)
 	
-	# Shake camera of local player if they exist
 	var game_node = get_parent()
 	if game_node:
-		var local_id = multiplayer.get_unique_id()
+		var local_id = multiplayer.get_unique_id() if multiplayer.has_multiplayer_peer() else 1
 		var local_player = game_node.get_node_or_null(str(local_id))
 		if local_player and local_player.has_method("shake_camera"):
 			local_player.shake_camera(8.0, 0.5)
 			
-	# Fade out animation
 	var tween = create_tween()
 	tween.tween_property(gate_sprite, "modulate:a", 0.0, 0.6)
 	tween.parallel().tween_property(gate_sprite, "scale:y", 0.1, 0.6)
 	
-	# Also fade out the lever labels
 	tween.parallel().tween_property(lever_a_label, "modulate:a", 0.0, 0.4)
 	tween.parallel().tween_property(lever_b_label, "modulate:a", 0.0, 0.4)
 	tween.parallel().tween_property(gate_label, "modulate:a", 0.0, 0.4)
 	
-	# Wait for animation and free
 	tween.tween_callback(queue_free)
 
 func update_visuals() -> void:
@@ -126,23 +132,21 @@ func update_visuals() -> void:
 		gate_label.text = "UNLOCKED!"
 		return
 		
-	# Update Lever A
 	if lever_a_active:
-		lever_a_sprite.self_modulate = Color(0.2, 0.8, 0.3) # Green
+		lever_a_sprite.self_modulate = Color(0.2, 0.8, 0.3)
 		lever_a_label.text = "ACTIVE (%.1fs)" % lever_a_timer
 	else:
-		lever_a_sprite.self_modulate = Color(0.9, 0.2, 0.2) # Red
+		lever_a_sprite.self_modulate = Color(0.9, 0.2, 0.2)
 		if local_in_lever_a:
 			lever_a_label.text = "PRESS [E]"
 		else:
 			lever_a_label.text = "LEVER A"
 			
-	# Update Lever B
 	if lever_b_active:
-		lever_b_sprite.self_modulate = Color(0.2, 0.8, 0.3) # Green
+		lever_b_sprite.self_modulate = Color(0.2, 0.8, 0.3)
 		lever_b_label.text = "ACTIVE (%.1fs)" % lever_b_timer
 	else:
-		lever_b_sprite.self_modulate = Color(0.9, 0.2, 0.2) # Red
+		lever_b_sprite.self_modulate = Color(0.9, 0.2, 0.2)
 		if local_in_lever_b:
 			lever_b_label.text = "PRESS [E]"
 		else:

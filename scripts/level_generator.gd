@@ -4,6 +4,7 @@ extends Node2D
 @export var jellyfish_scene: PackedScene = preload("res://scenes/jellyfish.tscn")
 @export var oxygen_spot_scene: PackedScene = preload("res://scenes/oxygen_spot.tscn")
 @export var coop_gate_scene: PackedScene = preload("res://scenes/coop_gate.tscn")
+@export var current_vent_scene: PackedScene = preload("res://scenes/current_vent.tscn")
 
 @export var start_depth: float = 300.0
 @export var end_depth: float = 3600.0
@@ -29,6 +30,14 @@ func generate_level(p_seed: int) -> void:
 			gate.position = Vector2(0, current_depth)
 			gate.name = "CoopGate_" + str(int(current_depth))
 			get_parent().add_child(gate)
+			current_depth += depth_interval
+			continue
+
+		if abs(current_depth - 660.0) < 10.0 or abs(current_depth - 1800.0) < 10.0 or abs(current_depth - 3060.0) < 10.0:
+			var vent = current_vent_scene.instantiate()
+			vent.position = Vector2(0, current_depth)
+			vent.name = "CurrentVent_" + str(int(current_depth))
+			get_parent().add_child(vent)
 			current_depth += depth_interval
 			continue
 

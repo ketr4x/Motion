@@ -16,15 +16,29 @@ var ready_peers = []
 var game_started = false
 
 func _ready() -> void:
-	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
-	if multiplayer.is_server():
-		$ShoalTimer.timeout.connect(_on_shoal_timer_timeout)
-		register_ready_peer(1)
+	if multiplayer.has_multiplayer_peer():
+		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+		if multiplayer.is_server():
+			$ShoalTimer.timeout.connect(_on_shoal_timer_timeout)
+			register_ready_peer(1)
+		else:
+			$ShoalTimer.stop()
+			notify_server_ready.rpc_id(1, multiplayer.get_unique_id())
 	else:
-		$ShoalTimer.stop()
-		notify_server_ready.rpc_id(1, multiplayer.get_unique_id())
+		$ShoalTimer.timeout.connect(_on_shoal_timer_timeout)
+		spawn_local_player_for_preview()
 		
 	setup_hud()
+
+func spawn_local_player_for_preview() -> void:
+	player_status.clear()
+	player_status[1] = "alive"
+	var player_instance = player_scene.instantiate()
+	player_instance.name = "1"
+	player_instance.position = spawn_point_1.position
+	player_instance.set_multiplayer_authority(1)
+	add_child(player_instance)
+	$LevelGenerator.generate_level(randi())
 
 @rpc("any_peer", "call_local", "reliable")
 func notify_server_ready(peer_id: int) -> void:
@@ -78,7 +92,7 @@ func setup_hud() -> void:
 	oxygen_bar_fill = oxygen_bar.get_theme_stylebox("fill") as StyleBoxFlat
 
 func _process(_delta: float) -> void:
-	if multiplayer.is_server():
+	if multiplayer.has_multiplayer_peer() and multiplayer.is_server():
 		var all_doomed = true
 		var player_nodes = []
 		for peer_id in MultiplayerManager.players:
@@ -99,9 +113,9 @@ func _process(_delta: float) -> void:
 				transition_to_death.rpc()
 
 	if local_player == null:
-		var peer_id = multiplayer.get_unique_id()
+		var peer_id = multiplayer.get_unique_id() if multiplayer.has_multiplayer_peer() else 1
 		var player_node = get_node_or_null(str(peer_id))
-		if player_node != null and player_node.is_multiplayer_authority():
+		if player_node != null and (not multiplayer.has_multiplayer_peer() or player_node.is_multiplayer_authority()):
 			local_player = player_node
 	
 	if local_player != null:
@@ -121,7 +135,7 @@ func _process(_delta: float) -> void:
 func player_died(peer_id: int) -> void:
 	print("Game: Player ", peer_id, " died.")
 	
-	if not multiplayer.is_server():
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		return
 		
 	player_status[peer_id] = "dead"
@@ -134,7 +148,10 @@ func player_died(peer_id: int) -> void:
 			
 	if all_dead:
 		print("Game: All players are dead. Game Over!")
-		transition_to_death.rpc()
+		if multiplayer.has_multiplayer_peer():
+			transition_to_death.rpc()
+		else:
+			_transition_to_death()
 	else:
 		print("Game: Starting 5s respawn timer for player ", peer_id)
 		await get_tree().create_timer(5.0).timeout
@@ -149,7 +166,10 @@ func player_died(peer_id: int) -> void:
 						break
 			
 			player_status[peer_id] = "alive"
-			respawn_player.rpc(peer_id, survivor_pos)
+			if multiplayer.has_multiplayer_peer():
+				respawn_player.rpc(peer_id, survivor_pos)
+			else:
+				respawn_player(peer_id, survivor_pos)
 
 @rpc("authority", "call_local", "reliable")
 func respawn_player(peer_id: int, pos: Vector2) -> void:
@@ -159,7 +179,6 @@ func respawn_player(peer_id: int, pos: Vector2) -> void:
 
 @rpc("authority", "call_local", "reliable")
 func transition_to_death() -> void:
-	# Shut down networking immediately to prevent parsing remaining packets in this frame
 	multiplayer.multiplayer_peer = null
 	MultiplayerManager.players.clear()
 	call_deferred("_transition_to_death")
@@ -168,7 +187,7 @@ func _transition_to_death() -> void:
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 func _on_shoal_timer_timeout() -> void:
-	if not multiplayer.is_server():
+	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		return
 	
 	var living_players = []

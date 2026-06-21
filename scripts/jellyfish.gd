@@ -15,7 +15,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	time_passed += delta
 	
-	if multiplayer.is_server():
+	if not multiplayer.has_multiplayer_peer() or multiplayer.is_server():
 		position.y = spawn_y + sin(time_passed * 1.5) * float_range
 		
 	if has_node("Sprite2D"):
