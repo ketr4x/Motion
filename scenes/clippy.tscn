@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://df5s7hcl8vclp"]
 
 [ext_resource type="Script" path="res://scripts/clippy.gd" id="1_clippy"]
-[ext_resource type="Texture2D" path="res://assets/clippy.png" id="2_spritesheet"]
+[ext_resource type="Texture2D" path="res://assets/CLIPPY.png" id="2_spritesheet"]
 [ext_resource type="FontFile" path="res://assets/dogica.otf" id="3_font"]
 
 [node name="Clippy" type="Control"]

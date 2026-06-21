@@ -28,6 +28,7 @@ var last_seed: int = 0
 var last_time: float = 0.0
 var show_ending_screen: bool = false
 var ending_victory: bool = false
+var was_host: bool = false
 var game_ready_peers = []
 
 func get_best_time() -> float:

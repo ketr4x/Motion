@@ -197,6 +197,7 @@ func win_game(final_time_ms: float) -> void:
 	MultiplayerManager.last_time = final_time_ms / 1000.0
 	MultiplayerManager.show_ending_screen = true
 	MultiplayerManager.ending_victory = true
+	MultiplayerManager.was_host = MultiplayerManager.is_host
 	
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		MultiplayerManager.leave_game()
@@ -272,6 +273,7 @@ func transition_to_death(final_time_ms: float) -> void:
 	MultiplayerManager.last_time = final_time_ms / 1000.0
 	MultiplayerManager.show_ending_screen = true
 	MultiplayerManager.ending_victory = false
+	MultiplayerManager.was_host = MultiplayerManager.is_host
 	
 	if multiplayer.has_multiplayer_peer() and not multiplayer.is_server():
 		MultiplayerManager.leave_game()
