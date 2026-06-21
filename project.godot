@@ -19,6 +19,7 @@ config/icon="res://assets/icon.svg"
 [autoload]
 
 MultiplayerManager="*res://scripts/multiplayer_manager.gd"
+Talo="*uid://bpmdn8oc34pg7"
 
 [display]
 
@@ -27,9 +28,7 @@ window/size/viewport_height=1080
 window/size/mode=3
 window/size/window_width_override=1920
 window/size/window_height_override=1080
-window/size/resizable=true
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 
 [editor]
 
@@ -38,7 +37,7 @@ version_control/autoload_on_startup=true
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot_super-wakatime/plugin.cfg")
+enabled=PackedStringArray("res://addons/godot_super-wakatime/plugin.cfg", "res://addons/talo/plugin.cfg")
 
 [global_group]
 
