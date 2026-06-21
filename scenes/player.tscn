@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://df5s7hsk8vswp"]
 
 [ext_resource type="Script" uid="uid://dmed16r5227ji" path="res://scripts/player.gd" id="1_player"]
-
-[sub_resource type="CanvasTexture" id="CanvasTexture_player"]
+[ext_resource type="Texture2D" uid="uid://doi5cg0ipmj73" path="res://assets/gostekspritesheet.png" id="2_gostek_spritesheet"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(60, 60)
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_sync"]
 properties/0/path = NodePath(".:position")
@@ -31,8 +31,11 @@ collision_layer = 2
 script = ExtResource("1_player")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=114310006]
-scale = Vector2(20, 20)
-texture = SubResource("CanvasTexture_player")
+texture_filter = 1
+scale = Vector2(3.75, 3.75)
+texture = ExtResource("2_gostek_spritesheet")
+hframes = 20
+vframes = 3
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1003859765]
 shape = SubResource("RectangleShape2D_player")
@@ -42,3 +45,22 @@ enabled = false
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1420428052]
 replication_config = SubResource("SceneReplicationConfig_sync")
+
+[node name="BubbleParticles" type="CPUParticles2D" parent="."]
+unique_name_in_owner = true
+z_index = -1
+emitting = false
+amount = 20
+lifetime = 0.6
+randomness = 0.4
+emission_shape = 1
+emission_sphere_radius = 12.0
+direction = Vector2(0, 1)
+gravity = Vector2(0, -80)
+initial_velocity_min = 10.0
+initial_velocity_max = 20.0
+scale_amount_min = 3.0
+scale_amount_max = 7.5
+color = Color(0.65, 0.85, 1.0, 0.5)
+
+

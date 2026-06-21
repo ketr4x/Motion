@@ -33,6 +33,10 @@ var was_e_pressed: bool = false
 
 @onready var camera: Camera2D = $Camera2D
 @onready var sprite: Sprite2D = $Sprite2D
+@onready var bubble_particles: CPUParticles2D = %BubbleParticles
+
+var anim_time: float = 0.0
+var spawn_intro_timer: float = 1.0
 
 var shake_amount: float = 0.0
 var shake_decay: float = 0.0
@@ -49,10 +53,9 @@ func _ready() -> void:
 		camera.top_level = true
 		camera.zoom = camera_zoom
 		camera.global_position = Vector2(0, global_position.y)
-		original_color = Color(0.2, 0.6, 1.0)
 	else:
 		camera.enabled = false
-		original_color = Color(0.2, 0.9, 0.6)
+	original_color = Color.WHITE
 	sprite.self_modulate = original_color
 
 func _physics_process(delta: float) -> void:
@@ -60,6 +63,12 @@ func _physics_process(delta: float) -> void:
 		return
 
 	if not is_multiplayer_authority():
+		return
+
+	if spawn_intro_timer > 0.0:
+		velocity = Vector2(0, 150.0)
+		move_and_slide()
+		position.x = clamp(position.x, -horizontal_boundary, horizontal_boundary)
 		return
 
 	if is_suffocating:
@@ -109,7 +118,7 @@ func _physics_process(delta: float) -> void:
 	if just_pressed_shift and dash_cooldown_timer <= 0.0 and not is_stunned:
 		var d_dir = input_dir
 		if d_dir == Vector2.ZERO:
-			d_dir = Vector2.LEFT if sprite.flip_h else Vector2.RIGHT
+			d_dir = Vector2.UP.rotated(sprite.rotation)
 		
 		if oxygen > 0.0:
 			oxygen = max(0.0, oxygen - dash_oxygen_cost)
@@ -130,8 +139,6 @@ func _physics_process(delta: float) -> void:
 	var current_speed = speed * 0.3 if is_suffocating else speed
 	if input_dir != Vector2.ZERO:
 		velocity = velocity.lerp(input_dir * current_speed, 0.1)
-		if input_dir.x != 0:
-			sprite.flip_h = input_dir.x < 0
 	else:
 		velocity = velocity.lerp(Vector2.ZERO, friction)
 		
@@ -201,6 +208,7 @@ func respawn(pos: Vector2) -> void:
 	collision_layer = 2
 	collision_mask = 1
 	sprite.visible = true
+	spawn_intro_timer = 1.0
 	velocity = Vector2.ZERO
 	if is_multiplayer_authority():
 		camera.global_position = Vector2(0, pos.y)
@@ -230,13 +238,15 @@ func _process(delta: float) -> void:
 		else:
 			camera.offset = Vector2.ZERO
 				
-	if velocity.length() > speed * 1.3 and not is_dead:
+	# Scale logic: adjust base scale for 16x16 sprites scaled 3x and apply squash/stretch
+	var base_scale = Vector2(3.75, 3.75)
+	if velocity.length() > speed * 1.3 and not is_dead and not is_dashing and spawn_intro_timer <= 0.0:
 		if abs(velocity.x) > abs(velocity.y):
-			sprite.scale = Vector2(26.0, 15.0)
+			sprite.scale = base_scale * Vector2(1.3, 0.75)
 		else:
-			sprite.scale = Vector2(15.0, 26.0)
+			sprite.scale = base_scale * Vector2(0.75, 1.3)
 	else:
-		sprite.scale = Vector2(20.0, 20.0)
+		sprite.scale = base_scale
 
 	if is_suffocating and not is_dead:
 		var pulse = (sin(Time.get_ticks_msec() * 0.015) + 1.0) * 0.5
@@ -246,6 +256,69 @@ func _process(delta: float) -> void:
 		sprite.self_modulate = original_color.lerp(Color(1.0, 1.0, 0.2), pulse)
 	else:
 		sprite.self_modulate = original_color
+
+	# Update animation and bubble particles
+	if not is_dead:
+		anim_time += delta
+		if spawn_intro_timer > 0.0:
+			spawn_intro_timer -= delta
+
+		# Rotation logic
+		if spawn_intro_timer > 0.0 or is_dashing:
+			sprite.rotation = lerp_angle(sprite.rotation, 0.0, 10.0 * delta)
+		elif velocity.length() > 10.0:
+			var target_rotation = velocity.angle() + PI/2
+			sprite.rotation = lerp_angle(sprite.rotation, target_rotation, 8.0 * delta)
+		else:
+			sprite.rotation = lerp_angle(sprite.rotation, 0.0, 5.0 * delta)
+
+		# Bubble particles control
+		if bubble_particles:
+			bubble_particles.emitting = true
+			if is_dashing or spawn_intro_timer > 0.0:
+				bubble_particles.amount = 24
+				bubble_particles.lifetime = 0.4
+				bubble_particles.speed_scale = 2.0
+			elif velocity.length() > 10.0:
+				bubble_particles.amount = 12
+				bubble_particles.lifetime = 0.6
+				bubble_particles.speed_scale = 1.0
+			else:
+				bubble_particles.emitting = false
+
+		# Frame selection based on state
+		if spawn_intro_timer > 0.0:
+			# Play diving salto flip (Row 1/row 0, frames 10-16)
+			var t = 1.0 - spawn_intro_timer # 0.0 to 1.0
+			var frame_idx = 10 + int(fmod(t * 14.0, 7.0)) # 2 complete flips over 1.0s
+			sprite.frame_coords = Vector2i(clamp(frame_idx, 10, 16), 0)
+		elif is_dashing:
+			# Play fast dash flip (Row 1/row 0, frames 10-16)
+			var t = 1.0 - (dash_timer / dash_duration) # 0.0 to 1.0
+			var frame_idx = 10 + int(t * 7)
+			sprite.frame_coords = Vector2i(clamp(frame_idx, 10, 16), 0)
+		elif is_stunned:
+			# Chaotic stun jitter from Row 1
+			var frame_idx = int(anim_time * 24.0) % 20
+			sprite.frame_coords = Vector2i(frame_idx, 0)
+		elif velocity.length() > 10.0:
+			# Swimming: Row 3 (row 2, 8 frames)
+			var speed_mult = 0.4 if is_suffocating else 1.0
+			var frame_idx = int(anim_time * 12.0 * speed_mult) % 8
+			sprite.frame_coords = Vector2i(frame_idx, 2)
+		else:
+			# Idle: Row 2 (row 1, 10 frames)
+			# Every 8 seconds of idle, play a random idle-break variant from Row 1 for 2 seconds
+			var idle_cycle = fmod(anim_time, 8.0)
+			if idle_cycle >= 6.0:
+				var frame_idx = int(anim_time * 10.0) % 20
+				sprite.frame_coords = Vector2i(frame_idx, 0)
+			else:
+				var frame_idx = int(anim_time * 6.0) % 10
+				sprite.frame_coords = Vector2i(frame_idx, 1)
+	else:
+		if bubble_particles:
+			bubble_particles.emitting = false
 
 func get_survivor() -> CharacterBody2D:
 	var parent = get_parent()
