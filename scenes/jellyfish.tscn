@@ -3,45 +3,10 @@
 [ext_resource type="Script" uid="uid://b3o0jlalqvqo6" path="res://scripts/jellyfish.gd" id="1_jelly"]
 [ext_resource type="Texture2D" uid="uid://bamp2oojav67r" path="res://assets/meduza.png" id="2_52w0f"]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_po3rc"]
-atlas = ExtResource("2_52w0f")
-region = Rect2(0, 0, 16, 16)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_71a4x"]
-atlas = ExtResource("2_52w0f")
-region = Rect2(16, 0, 16, 16)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_0tvrc"]
-atlas = ExtResource("2_52w0f")
-region = Rect2(32, 0, 16, 16)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_kha3f"]
-atlas = ExtResource("2_52w0f")
-region = Rect2(48, 0, 16, 16)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_nm2nm"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_po3rc")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_71a4x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_0tvrc")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_kha3f")
-}],
-"loop": 1,
-"name": &"default",
-"speed": 5.0
-}]
-
+[ext_resource type="Texture2D" uid="uid://djelly" path="res://assets/meduza.png" id="2_spritesheet"]
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_jelly"]
-radius = 76.0
-height = 324.0
+radius = 6.0
+height = 18.0
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_jelly"]
 properties/0/path = NodePath(".:position")
@@ -53,10 +18,11 @@ collision_layer = 4
 collision_mask = 2
 script = ExtResource("1_jelly")
 
-[node name="Sprite2D" type="AnimatedSprite2D" parent="." unique_id=2000147065]
-self_modulate = Color(0.8, 0.4, 0.9, 0.7)
-scale = Vector2(24, 24)
-sprite_frames = SubResource("SpriteFrames_nm2nm")
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+scale = Vector2(3.75, 3.75)
+texture = ExtResource("2_spritesheet")
+hframes = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=561084456]
 position = Vector2(0, 4)

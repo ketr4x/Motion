@@ -56,7 +56,25 @@ func _enter_tree() -> void:
 	if peer_id > 0:
 		set_multiplayer_authority(peer_id)
 
+var shock_particles: CPUParticles2D
+
 func _ready() -> void:
+	shock_particles = CPUParticles2D.new()
+	shock_particles.emitting = false
+	shock_particles.one_shot = true
+	shock_particles.amount = 40
+	shock_particles.lifetime = 1.0
+	shock_particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	shock_particles.emission_sphere_radius = 20.0
+	shock_particles.direction = Vector2(0, -1)
+	shock_particles.spread = 60.0
+	shock_particles.initial_velocity_min = 50.0
+	shock_particles.initial_velocity_max = 100.0
+	shock_particles.scale_amount_min = 2.0
+	shock_particles.scale_amount_max = 4.0
+	shock_particles.color = Color(0.1, 0.1, 0.1, 0.8)
+	add_child(shock_particles)
+	
 	add_to_group("players")
 	oxygen = max_oxygen
 	if is_local_authority():
@@ -477,6 +495,8 @@ func shock(duration: float) -> void:
 	is_stunned = true
 	stun_time_left = max(stun_time_left, duration)
 	is_dashing = false
+	if shock_particles:
+		shock_particles.restart()
 	print(name, " was shocked!")
 
 @rpc("any_peer", "call_local", "reliable")

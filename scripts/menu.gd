@@ -450,6 +450,21 @@ func _setup_ending() -> void:
 	if leaderboard_title:
 		leaderboard_title.gui_input.connect(_on_leaderboard_title_gui_input)
 
+	for p in [[ending_panel, ending_title], [leaderboard_panel, leaderboard_title]]:
+		var panel = p[0]
+		var title = p[1]
+		if title:
+			var btn = Button.new()
+			btn.text = "X"
+			btn.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+			btn.offset_left = -32
+			btn.offset_right = -4
+			btn.offset_top = 4
+			btn.offset_bottom = 32
+			btn.focus_mode = Control.FOCUS_NONE
+			btn.pressed.connect(func(): panel.hide())
+			title.add_child(btn)
+
 	if MultiplayerManager.show_ending_screen:
 		MultiplayerManager.show_ending_screen = false
 
