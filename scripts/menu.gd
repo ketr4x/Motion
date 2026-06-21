@@ -247,7 +247,7 @@ func _on_host_pressed() -> void:
 	var name_text := name_input.text.strip_edges()
 	if name_text == "":
 		name_text = "Host"
-	if MultiplayerManager.host_game(name_text):
+	if MultiplayerManager.host_game(name_text, ip_input.text):
 		ui_container.visible = false
 		lobby_panel.visible = true
 		start_button.visible = true
@@ -271,8 +271,7 @@ func _on_start_pressed() -> void:
 		MultiplayerManager.toggle_ready.rpc()
 
 func _on_leave_pressed() -> void:
-	multiplayer.multiplayer_peer = null
-	MultiplayerManager.players.clear()
+	MultiplayerManager.leave_game()
 	lobby_panel.visible = false
 	ui_container.visible = true
 	start_button.visible = false
@@ -293,6 +292,20 @@ func _on_player_list_changed() -> void:
 		list_text += "- " + p_info["name"] + suffix + ready_status + "\n"
 		if not p_info.get("ready", false):
 			all_ready = false
+
+	if multiplayer.multiplayer_peer != null:
+		var is_host = multiplayer.is_server()
+		if is_host:
+			var ips: Array[String] = []
+			for ip in IP.get_local_addresses():
+				if ip.contains(":") or ip == "127.0.0.1" or ip.begins_with("169.254."):
+					continue
+				ips.append(ip)
+			if ips.size() > 0:
+				list_text += "\nHost LAN IP: " + ", ".join(ips)
+				list_text += "\n(Connect using this IP address)"
+		else:
+			list_text += "\nConnected to: " + MultiplayerManager.host_ip
 
 	player_list_label.text = list_text
 
