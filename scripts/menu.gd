@@ -70,6 +70,7 @@ var dragging_window := false
 var drag_offset := Vector2.ZERO
 
 func _ready() -> void:
+	RenderingServer.set_default_clear_color(Color("#639BFF"))
 	_setup_seamless_colors()
 	_spawn_clouds()
 	_setup_logo()
@@ -90,9 +91,8 @@ func _setup_seamless_colors() -> void:
 		return
 
 	var sky_color := img.get_pixel(img.get_width() / 2, 0)
-	var ocean_color := img.get_pixel(img.get_width() / 2, img.get_height() - 1)
 	sky_rect.color = sky_color
-	ocean_rect.color = ocean_color
+	ocean_rect.color = Color("#639bff")
 
 func _spawn_clouds() -> void:
 	if cloud_textures.is_empty():
@@ -548,6 +548,19 @@ func format_time(seconds: float) -> String:
 	var msecs = int((seconds - int(seconds)) * 100)
 	return "%02d:%02d.%02d" % [minutes, secs, msecs]
 
+func play_start_transition() -> void:
+	var tween = create_tween().set_parallel(true)
+	if lobby_panel.visible:
+		lobby_panel.pivot_offset = lobby_panel.size / 2.0
+		tween.tween_property(lobby_panel, "scale", Vector2.ZERO, 0.4).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_BACK)
+	if ui_container.visible:
+		ui_container.pivot_offset = ui_container.size / 2.0
+		tween.tween_property(ui_container, "scale", Vector2.ZERO, 0.4).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_BACK)
+	
+	ocean_rect.size.y = 5000.0
+	tween.tween_property($CanvasLayer, "offset:y", -3000.0, 1.5).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_QUAD)
+	
+	await tween.finished
 func _on_team_name_changed(new_text: String) -> void:
 	if multiplayer.has_multiplayer_peer():
 		if multiplayer.is_server():

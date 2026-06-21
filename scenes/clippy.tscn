@@ -1,89 +1,54 @@
-[gd_scene load_steps=8 format=3 uid="uid://df5s7hcl8vclp"]
+[gd_scene load_steps=4 format=3 uid="uid://df5s7hcl8vclp"]
 
 [ext_resource type="Script" path="res://scripts/clippy.gd" id="1_clippy"]
-[ext_resource type="Shader" path="res://scripts/clippy_black_key.gdshader" id="2_shader"]
-[ext_resource type="Texture2D" path="res://assets/clippy.jpg" id="3_texture"]
-[ext_resource type="FontFile" path="res://assets/dogica.otf" id="4_font"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_key"]
-shader = ExtResource("2_shader")
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_clippy"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_btn"]
+[ext_resource type="Texture2D" path="res://assets/clippy.png" id="2_spritesheet"]
+[ext_resource type="FontFile" path="res://assets/dogica.otf" id="3_font"]
 
 [node name="Clippy" type="Control"]
-custom_minimum_size = Vector2(640, 260)
-layout_mode = 3
-anchors_preset = 1
-anchor_left = 1.0
-anchor_top = 0.0
-anchor_right = 1.0
-anchor_bottom = 0.0
-offset_left = -660.0
-offset_top = 20.0
-offset_right = -20.0
-offset_bottom = 280.0
-grow_horizontal = 0
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -110.0
+offset_right = 220.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+clip_contents = true
 script = ExtResource("1_clippy")
 
-[node name="SpeechBubble" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(390, 220)
-layout_mode = 0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 410.0
-offset_bottom = 240.0
-theme_override_styles/panel = SubResource("StyleBoxEmpty_clippy")
+[node name="Content" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="SpeechBubble"]
-layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 12
+[node name="ClippySprite" type="Sprite2D" parent="Content"]
+texture_filter = 1
+position = Vector2(48, 50)
+scale = Vector2(6, 6)
+texture = ExtResource("2_spritesheet")
+hframes = 8
+vframes = 4
+frame_coords = Vector2i(0, 3)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="SpeechBubble/MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="TitleLabel" type="Label" parent="SpeechBubble/MarginContainer/VBoxContainer"]
-layout_mode = 2
+[node name="TipLabel" type="Label" parent="Content"]
+offset_left = 108.0
+offset_top = 10.0
+offset_right = 430.0
+offset_bottom = 90.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
 theme_override_constants/outline_size = 4
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_fonts/font = ExtResource("4_font")
-theme_override_font_sizes/font_size = 14
-text = "Clippy"
-
-[node name="ContentLabel" type="Label" parent="SpeechBubble/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(350, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
-theme_override_constants/outline_size = 4
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_fonts/font = ExtResource("4_font")
-theme_override_font_sizes/font_size = 10
-text = "It looks like you're running low on oxygen. Try finding an Oxygen Spot to recharge!"
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 12
+text = ""
+horizontal_alignment = 0
+vertical_alignment = 1
 autowrap_mode = 3
-
-[node name="ClippyTexture" type="TextureRect" parent="."]
-material = SubResource("ShaderMaterial_key")
-custom_minimum_size = Vector2(200, 220)
-layout_mode = 0
-offset_left = 430.0
-offset_top = 20.0
-offset_right = 630.0
-offset_bottom = 240.0
-size_flags_vertical = 4
-texture = ExtResource("3_texture")
-expand_mode = 1
-stretch_mode = 5

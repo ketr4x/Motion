@@ -1,7 +1,7 @@
 extends Area2D
 
 @export var boost_direction: Vector2 = Vector2.DOWN
-@export var boost_strength: float = 400.0
+@export var boost_strength: float = 500.0
 
 func _physics_process(delta: float) -> void:
 	for body in get_overlapping_bodies():
