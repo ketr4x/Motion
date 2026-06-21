@@ -336,7 +336,7 @@ theme_override_colors/font_placeholder_color = Color(0.3, 0.3, 0.3, 0.5)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("sb_win95_input")
 theme_override_styles/focus = SubResource("sb_win95_input")
-placeholder_text = "127.0.0.1"
+placeholder_text = "Enter Code or IP"
 alignment = 1
 
 [node name="ButtonsHBox" type="HBoxContainer" parent="CanvasLayer/UIContainer/VBox"]

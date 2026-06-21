@@ -18,6 +18,7 @@ var is_webrtc_active = false
 var room_code = ""
 var is_host = false
 var _ws_was_connected = false
+var connection_in_progress = false
 
 var last_seed: int = 0
 var last_time: float = 0.0
@@ -108,6 +109,14 @@ func join_game(player_name: String, ip: String = DEFAULT_IP, port: int = DEFAULT
 	local_player_name = player_name
 	host_ip = ip
 	
+	connection_in_progress = true
+	var timer = get_tree().create_timer(10.0)
+	timer.timeout.connect(func():
+		if connection_in_progress:
+			connection_status.emit(false, "Connection timed out.")
+			_reset_connection()
+	)
+	
 	var use_enet = false
 	if ip.contains(".") or ip.to_lower() == "localhost" or ip.to_lower() == "lan":
 		use_enet = true
@@ -167,6 +176,7 @@ func leave_game() -> void:
 	players.clear()
 
 func _reset_connection() -> void:
+	connection_in_progress = false
 	if ws_peer:
 		ws_peer.close()
 		ws_peer = null
@@ -190,6 +200,9 @@ func _process(_delta: float) -> void:
 		elif state == WebSocketPeer.STATE_CLOSED:
 			if _ws_was_connected or (is_webrtc_active and not multiplayer.has_multiplayer_peer()):
 				connection_status.emit(false, "Signaling server disconnected.")
+				_reset_connection()
+			elif is_webrtc_active and multiplayer.get_peers().size() == 0:
+				connection_status.emit(false, "Failed to connect to signaling server.")
 				_reset_connection()
 
 func _on_signaling_connected() -> void:
@@ -278,6 +291,8 @@ func _handle_rtc_signal(data: Dictionary) -> void:
 func _on_peer_connected(id: int) -> void:
 	if multiplayer.is_server():
 		register_player.rpc_id(id, local_player_name)
+	else:
+		connection_in_progress = false
 
 @rpc("any_peer", "reliable")
 func register_player(p_name: String) -> void:
@@ -309,17 +324,18 @@ func _on_peer_disconnected(id: int) -> void:
 	player_list_changed.emit()
 
 func _on_connected_to_server() -> void:
+	connection_in_progress = false
 	register_player.rpc_id(1, local_player_name)
 
 func _on_connection_failed() -> void:
 	connection_status.emit(false, "Connection to server failed.")
-	multiplayer.multiplayer_peer = null
+	_reset_connection()
 
 func _on_server_disconnected() -> void:
 	players.clear()
 	player_list_changed.emit()
 	connection_status.emit(false, "Server disconnected.")
-	multiplayer.multiplayer_peer = null
+	_reset_connection()
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 func start_game() -> void:
