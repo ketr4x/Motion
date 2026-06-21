@@ -10,7 +10,7 @@ var players = {}
 var local_player_name = "Player"
 var host_ip: String = ""
 
-var signaling_url = "ws://localhost:8080"
+var signaling_url = "wss://motion-w7fu.onrender.com"
 var ws_peer: WebSocketPeer = null
 var rtc_peer: WebRTCMultiplayerPeer = null
 var rtc_connection: WebRTCPeerConnection = null
@@ -139,7 +139,7 @@ func _join_enet(ip: String, port: int) -> void:
 
 func _join_webrtc(room_to_join: String) -> void:
 	is_host = false
-	room_code = room_to_join.strip_edges().upper()
+	room_code = room_to_join.strip_edges().to_upper()
 	
 	if room_code == "":
 		connection_status.emit(false, "Please enter a valid 4-character Room Code.")
@@ -270,10 +270,7 @@ func _create_rtc_connection(target_peer_id: int) -> void:
 func _handle_rtc_signal(data: Dictionary) -> void:
 	if rtc_connection == null: return
 	
-	if data.type == "offer":
-		rtc_connection.set_remote_description(data.type, data.sdp)
-		rtc_connection.create_answer()
-	elif data.type == "answer":
+	if data.type == "offer" or data.type == "answer":
 		rtc_connection.set_remote_description(data.type, data.sdp)
 	elif data.type == "candidate":
 		rtc_connection.add_ice_candidate(data.media, data.index, data.name)
