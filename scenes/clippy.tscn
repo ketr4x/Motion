@@ -5,18 +5,16 @@
 [ext_resource type="FontFile" path="res://assets/dogica.otf" id="3_font"]
 
 [node name="Clippy" type="Control"]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -220.0
-offset_top = -110.0
-offset_right = 220.0
-offset_bottom = -10.0
-grow_horizontal = 2
-grow_vertical = 0
-mouse_filter = 2
+layout_mode = 3
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 20.0
+offset_top = -80.0
+offset_right = 460.0
+offset_bottom = 50.0
+grow_vertical = 2
+mouse_filter = 0
 clip_contents = true
 script = ExtResource("1_clippy")
 
@@ -28,10 +26,83 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+clip_contents = true
+
+[node name="WindowBackground" type="ColorRect" parent="Content"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.752941, 0.752941, 0.752941, 1)
+
+[node name="ShadowRight" type="ColorRect" parent="Content/WindowBackground"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -2.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="ShadowBottom" type="ColorRect" parent="Content/WindowBackground"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -2.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0, 0, 0, 1)
+
+[node name="HighlightLeft" type="ColorRect" parent="Content/WindowBackground"]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 2.0
+grow_vertical = 2
+color = Color(1, 1, 1, 1)
+
+[node name="HighlightTop" type="ColorRect" parent="Content/WindowBackground"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 2.0
+grow_horizontal = 2
+color = Color(1, 1, 1, 1)
+
+[node name="WindowTitleBar" type="ColorRect" parent="Content"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = 28.0
+grow_horizontal = 2
+mouse_filter = 0
+color = Color(0, 0, 0.501961, 1)
+
+[node name="TitleLabel" type="Label" parent="Content/WindowTitleBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 12
+text = "Clippy.exe"
+vertical_alignment = 1
 
 [node name="ClippySprite" type="Sprite2D" parent="Content"]
 texture_filter = 1
-position = Vector2(48, 50)
+position = Vector2(44, 76)
 scale = Vector2(6, 6)
 texture = ExtResource("2_spritesheet")
 hframes = 8
@@ -39,16 +110,16 @@ vframes = 4
 frame_coords = Vector2i(0, 3)
 
 [node name="TipLabel" type="Label" parent="Content"]
-offset_left = 108.0
-offset_top = 10.0
-offset_right = 430.0
-offset_bottom = 90.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
+layout_mode = 0
+offset_left = 104.0
+offset_top = 36.0
+offset_right = 426.0
+offset_bottom = 116.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 0
 theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 12
 text = ""
-horizontal_alignment = 0
 vertical_alignment = 1
 autowrap_mode = 3

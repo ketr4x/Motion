@@ -61,6 +61,7 @@ func _ready() -> void:
 	oxygen = max_oxygen
 	if is_local_authority():
 		camera.enabled = true
+		camera.make_current()
 		camera.top_level = true
 		camera.zoom = camera_zoom
 		camera.global_position = Vector2(0, global_position.y)
