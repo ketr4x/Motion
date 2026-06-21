@@ -295,6 +295,7 @@ func check_game_state() -> void:
 	var local_player = game_node.get("local_player")
 	if not local_player:
 		return
+	var children = game_node.get_children()
 	var depth_m = max(0, int(local_player.position.y / 10))
 	
 	if game_time >= 30.0 and depth_m < 200 and not has_suggested_reroll and not vote_active:

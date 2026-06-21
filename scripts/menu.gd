@@ -527,6 +527,8 @@ func _update_talo_leaderboard() -> void:
 	var list_text = ""
 	var rank = 1
 	for entry in entries_page.entries:
+		if rank > 20:
+			break
 		var name_str = entry.player_alias.identifier
 		var score_str = format_time(entry.score)
 		list_text += "%d. %s - %s\n" % [rank, name_str, score_str]
