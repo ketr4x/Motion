@@ -19,11 +19,6 @@ var game_start_time: float = 0.0
 var game_ended: bool = false
 
 func _ready() -> void:
-	if has_node("MultiplayerSpawner"):
-		var spawner = $MultiplayerSpawner
-		spawner.add_spawnable_scene("res://scenes/bubble_boost.tscn")
-		spawner.add_spawnable_scene("res://scenes/level_end_chest.tscn")
-		
 	if multiplayer.has_multiplayer_peer():
 		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 		if multiplayer.is_server():
