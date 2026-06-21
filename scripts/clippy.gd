@@ -34,8 +34,8 @@ var tips = {
 	"stunned": {"text": "Jellyfish sting! Oxygen drains 3x!", "anim": "clock", "max_shows": 1, "shows": 0, "cooldown": 30.0, "last_shown": -9999.0, "priority": 8},
 	"teammate_dead": {"text": "Partner down! Survive to respawn!", "anim": "clock", "max_shows": 1, "shows": 0, "cooldown": 20.0, "last_shown": -9999.0, "priority": 8},
 	"teammate_suffocating": {"text": "Teammate choking! Press E near them!", "anim": "clock", "max_shows": 1, "shows": 0, "cooldown": 25.0, "last_shown": -9999.0, "priority": 7},
-	"coop_gate": {"text": "Co-op gate! Both levers, 4 sec!", "anim": "talking", "max_shows": 1, "shows": 0, "cooldown": 40.0, "last_shown": -9999.0, "priority": 5},
-	"coop_gate_solo": {"text": "Solo gate! Hit both levers quick!", "anim": "talking", "max_shows": 1, "shows": 0, "cooldown": 40.0, "last_shown": -9999.0, "priority": 5},
+	"coop_gate": {"text": "Strong sea current! Both activators, 4 sec!", "anim": "talking", "max_shows": 1, "shows": 0, "cooldown": 40.0, "last_shown": -9999.0, "priority": 5},
+	"coop_gate_solo": {"text": "Strong sea current! Hit both activators quick!", "anim": "talking", "max_shows": 1, "shows": 0, "cooldown": 40.0, "last_shown": -9999.0, "priority": 5},
 	"shoal_fish": {"text": "Fish incoming! They push you up!", "anim": "talking", "max_shows": 1, "shows": 0, "cooldown": 30.0, "last_shown": -9999.0, "priority": 5},
 	"slingshot": {"text": "Dash into teammate for a slingshot!", "anim": "talking", "max_shows": 1, "shows": 0, "cooldown": 90.0, "last_shown": -9999.0, "priority": 3},
 	"suggest_reroll": {"text": "Press H to vote for seed reroll!", "anim": "vote", "max_shows": 1, "shows": 0, "cooldown": 9999.0, "last_shown": -9999.0, "priority": 11}

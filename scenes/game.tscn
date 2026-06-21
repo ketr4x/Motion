@@ -61,7 +61,7 @@ script = ExtResource("2_lvlgen")
 script = ExtResource("4_oceanbg")
 
 [node name="ShoalTimer" type="Timer" parent="." unique_id=1240718529]
-wait_time = 6.0
+wait_time = 2.0
 autostart = true
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=705492217]

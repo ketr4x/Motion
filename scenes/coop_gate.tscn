@@ -25,7 +25,7 @@ script = ExtResource("1_gate")
 collision_mask = 0
 
 [node name="Sprite2D" type="Sprite2D" parent="GateBody"]
-self_modulate = Color(0.1, 0.45, 0.8, 0.75)
+self_modulate = Color(0.2, 0.5, 0.9, 0.3)
 scale = Vector2(600, 20)
 texture = SubResource("CanvasTexture_barrier")
 
@@ -40,7 +40,7 @@ offset_bottom = -3.0
 theme_override_colors/font_color = Color(0.3, 0.7, 1, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 14
-text = "CO-OP GATE LOCKED"
+text = "STRONG SEA CURRENT"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -50,7 +50,7 @@ collision_layer = 0
 collision_mask = 2
 
 [node name="Sprite2D" type="Sprite2D" parent="LeverA"]
-self_modulate = Color(0.9, 0.2, 0.2, 1)
+self_modulate = Color(0.4, 0.4, 0.5, 1)
 scale = Vector2(16, 24)
 texture = SubResource("CanvasTexture_lever")
 
@@ -65,7 +65,7 @@ offset_bottom = -13.0
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 12
-text = "LEVER A"
+text = "ACTIVATOR A"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -75,7 +75,7 @@ collision_layer = 0
 collision_mask = 2
 
 [node name="Sprite2D" type="Sprite2D" parent="LeverB"]
-self_modulate = Color(0.9, 0.2, 0.2, 1)
+self_modulate = Color(0.4, 0.4, 0.5, 1)
 scale = Vector2(16, 24)
 texture = SubResource("CanvasTexture_lever")
 
@@ -90,7 +90,7 @@ offset_bottom = -13.0
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 12
-text = "LEVER B"
+text = "ACTIVATOR B"
 horizontal_alignment = 1
 vertical_alignment = 1
 

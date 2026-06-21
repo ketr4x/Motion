@@ -26,7 +26,27 @@ var lever_b_timer: float = 0.0
 var local_in_lever_a: bool = false
 var local_in_lever_b: bool = false
 
+var activator_a_id: int = 0
+var activator_b_id: int = 0
+
+var bubbles: CPUParticles2D
+
 func _ready() -> void:
+	bubbles = CPUParticles2D.new()
+	bubbles.amount = 120
+	bubbles.lifetime = 1.0
+	bubbles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	bubbles.emission_rect_extents = Vector2(300, 10)
+	bubbles.direction = Vector2(1, 0)
+	bubbles.spread = 5.0
+	bubbles.gravity = Vector2(0, 0)
+	bubbles.initial_velocity_min = 200.0
+	bubbles.initial_velocity_max = 350.0
+	bubbles.scale_amount_min = 3.0
+	bubbles.scale_amount_max = 5.0
+	bubbles.color = Color(0.6, 0.8, 1.0, 0.5)
+	gate_body.add_child(bubbles)
+	
 	lever_a.body_entered.connect(_on_lever_a_body_entered)
 	lever_a.body_exited.connect(_on_lever_a_body_exited)
 	
@@ -81,22 +101,32 @@ func request_activate_lever(lever_id: String) -> void:
 		return
 	if gate_open:
 		return
+	var sender_id = multiplayer.get_remote_sender_id() if multiplayer.has_multiplayer_peer() else 1
+	var players = get_tree().get_nodes_in_group("players")
+	var is_multi = players.size() > 1
 		
 	if lever_id == "A":
+		if is_multi and lever_b_active and activator_b_id == sender_id:
+			lever_b_active = false
 		lever_a_active = true
+		activator_a_id = sender_id
 		lever_a_timer = activation_window
 	elif lever_id == "B":
+		if is_multi and lever_a_active and activator_a_id == sender_id:
+			lever_a_active = false
 		lever_b_active = true
+		activator_b_id = sender_id
 		lever_b_timer = activation_window
 		
 	if multiplayer.has_multiplayer_peer():
 		sync_lever_states.rpc(lever_a_active, lever_a_timer, lever_b_active, lever_b_timer)
 	
 	if lever_a_active and lever_b_active:
-		if multiplayer.has_multiplayer_peer():
-			open_gate.rpc()
-		else:
-			open_gate()
+		if not is_multi or (activator_a_id != activator_b_id):
+			if multiplayer.has_multiplayer_peer():
+				open_gate.rpc()
+			else:
+				open_gate()
 
 @rpc("authority", "call_local", "reliable")
 func sync_lever_states(a_state: bool, a_time: float, b_state: bool, b_time: float) -> void:
@@ -120,6 +150,7 @@ func open_gate() -> void:
 	var tween = create_tween()
 	tween.tween_property(gate_sprite, "modulate:a", 0.0, 0.6)
 	tween.parallel().tween_property(gate_sprite, "scale:y", 0.1, 0.6)
+	tween.parallel().tween_property(bubbles, "modulate:a", 0.0, 0.6)
 	
 	tween.parallel().tween_property(lever_a_label, "modulate:a", 0.0, 0.4)
 	tween.parallel().tween_property(lever_b_label, "modulate:a", 0.0, 0.4)
@@ -132,28 +163,29 @@ func open_gate() -> void:
 
 func update_visuals() -> void:
 	if gate_open:
-		gate_label.text = "UNLOCKED!"
+		gate_label.text = "CURRENT FADED!"
+		bubbles.emitting = false
 		return
 		
 	if lever_a_active:
 		lever_a_sprite.self_modulate = Color(0.2, 0.8, 0.3)
 		lever_a_label.text = "ACTIVE (%.1fs)" % lever_a_timer
 	else:
-		lever_a_sprite.self_modulate = Color(0.9, 0.2, 0.2)
+		lever_a_sprite.self_modulate = Color(0.4, 0.4, 0.5)
 		if local_in_lever_a:
 			lever_a_label.text = "PRESS [E]"
 		else:
-			lever_a_label.text = "LEVER A"
+			lever_a_label.text = "ACTIVATOR A"
 			
 	if lever_b_active:
 		lever_b_sprite.self_modulate = Color(0.2, 0.8, 0.3)
 		lever_b_label.text = "ACTIVE (%.1fs)" % lever_b_timer
 	else:
-		lever_b_sprite.self_modulate = Color(0.9, 0.2, 0.2)
+		lever_b_sprite.self_modulate = Color(0.4, 0.4, 0.5)
 		if local_in_lever_b:
 			lever_b_label.text = "PRESS [E]"
 		else:
-			lever_b_label.text = "LEVER B"
+			lever_b_label.text = "ACTIVATOR B"
 
 func _on_lever_a_body_entered(body: Node2D) -> void:
 	if body.is_multiplayer_authority():
