@@ -2,6 +2,7 @@ extends Node
 
 signal player_list_changed
 signal connection_status(success: bool, message: String)
+signal team_name_changed(new_name: String)
 
 const DEFAULT_PORT = 12345
 const DEFAULT_IP = "127.0.0.1"
@@ -9,6 +10,7 @@ const DEFAULT_IP = "127.0.0.1"
 var players = {}
 var local_player_name = "Player"
 var host_ip: String = ""
+var team_name = ""
 
 var signaling_url = "wss://motion-w7fu.onrender.com"
 var ws_peer: WebSocketPeer = null
@@ -302,6 +304,18 @@ func register_player(p_name: String) -> void:
 	
 	if multiplayer.is_server():
 		sync_players.rpc(players)
+		sync_team_name.rpc(team_name)
+
+func set_team_name(new_name: String) -> void:
+	team_name = new_name
+	team_name_changed.emit(new_name)
+	if multiplayer.has_multiplayer_peer() and multiplayer.is_server():
+		sync_team_name.rpc(new_name)
+
+@rpc("authority", "reliable")
+func sync_team_name(new_name: String) -> void:
+	team_name = new_name
+	team_name_changed.emit(new_name)
 
 @rpc("any_peer", "call_local", "reliable")
 func toggle_ready() -> void:
@@ -344,4 +358,7 @@ func start_game() -> void:
 
 @rpc("authority", "reliable", "call_local")
 func load_game_scene() -> void:
+	var current_scene = get_tree().current_scene
+	if current_scene and current_scene.has_method("play_start_transition"):
+		await current_scene.play_start_transition()
 	get_tree().change_scene_to_file("res://scenes/game.tscn")

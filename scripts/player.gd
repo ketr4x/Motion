@@ -8,8 +8,8 @@ extends CharacterBody2D
 @export var water_friction: float = 700.0
 
 @export var oxygen: float = 100.0
-@export var camera_zoom: Vector2 = Vector2(2.5, 2.5)
-@export var horizontal_boundary: float = 300.0
+@export var camera_zoom: Vector2 = Vector2(3.33333, 3.33333)
+@export var horizontal_boundary: float = 288.0
 var is_dead: bool = false
 
 var is_suffocating: bool = false
@@ -57,6 +57,7 @@ func _enter_tree() -> void:
 		set_multiplayer_authority(peer_id)
 
 func _ready() -> void:
+	add_to_group("players")
 	oxygen = max_oxygen
 	if is_local_authority():
 		camera.enabled = true
@@ -127,7 +128,21 @@ func _physics_process(delta: float) -> void:
 	if input_dir != Vector2.ZERO:
 		last_look_dir = input_dir
 
+
+	var is_near_teammate = false
+	for p in get_tree().get_nodes_in_group("players"):
+		if p != self and not p.is_dead and not p.is_suffocating:
+			if global_position.distance_to(p.global_position) < 100.0:
+				is_near_teammate = true
+				break
+	
+	if is_near_teammate:
+		coop_speed_bonus = move_toward(coop_speed_bonus, 0.25, delta) # 25% speed boost when close
+	else:
+		coop_speed_bonus = move_toward(coop_speed_bonus, 0.0, 0.5 * delta)
+
 	if is_dashing:
+
 		dash_timer -= delta
 		if dash_timer <= 0.0:
 			is_dashing = false
@@ -264,6 +279,12 @@ func recharge_oxygen() -> void:
 		oxygen = max_oxygen
 		if is_suffocating:
 			stop_suffocating()
+		
+		# Oxygen Tether: Share with nearby players
+		for p in get_tree().get_nodes_in_group("players"):
+			if p != self and not p.is_dead and not p.is_suffocating:
+				if global_position.distance_to(p.global_position) < 180.0:
+					p.oxygen = min(p.max_oxygen, p.oxygen + 50.0)
 
 func die() -> void:
 	if not multiplayer.has_multiplayer_peer():
@@ -327,7 +348,7 @@ func _process(delta: float) -> void:
 		else:
 			var survivor = get_survivor()
 			if survivor:
-				camera.global_position.x = 0
+				camera.global_position = Vector2(0, global_position.y)
 				camera.global_position.y = lerp(camera.global_position.y, survivor.global_position.y, 5.0 * delta)
 		
 		var lookahead = velocity * 0.12

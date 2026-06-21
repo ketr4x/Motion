@@ -58,3 +58,9 @@ func _draw() -> void:
 		var dest_rect = Rect2(draw_pos - dest_size * 0.5, dest_size)
 		
 		draw_texture_rect_region(fish_spritesheet, dest_rect, src_rect)
+		# Small bubbles rising from fish
+		var bubble_color = Color(0.6, 0.85, 1.0, 0.25)
+		var b1_y = -sin(time_passed * 2.0 + phase) * 12.0 - 10.0
+		var b2_y = -sin(time_passed * 1.5 + phase + 1.5) * 16.0 - 14.0
+		draw_circle(draw_pos + Vector2(sz * 2.0, b1_y), 2.0, bubble_color)
+		draw_circle(draw_pos + Vector2(-sz * 3.0, b2_y), 1.5, bubble_color)

@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://df5chestrvclp"]
+
+[ext_resource type="Script" path="res://scripts/level_end_chest.gd" id="1_chest"]
+[ext_resource type="Texture2D" path="res://assets/glebokosci2.png" id="2_spritesheet"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_chest"]
+size = Vector2(176, 104)
+
+[node name="LevelEndChest" type="Area2D"]
+z_index = -5
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_chest")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+scale = Vector2(8, 8)
+texture = ExtResource("2_spritesheet")
+hframes = 9
+frame = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(40, 44)
+shape = SubResource("RectangleShape2D_chest")
