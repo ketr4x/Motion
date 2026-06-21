@@ -296,16 +296,23 @@ func _on_player_list_changed() -> void:
 	if multiplayer.multiplayer_peer != null:
 		var is_host = multiplayer.is_server()
 		if is_host:
-			var ips: Array[String] = []
-			for ip in IP.get_local_addresses():
-				if ip.contains(":") or ip == "127.0.0.1" or ip.begins_with("169.254."):
-					continue
-				ips.append(ip)
-			if ips.size() > 0:
-				list_text += "\nHost LAN IP: " + ", ".join(ips)
-				list_text += "\n(Connect using this IP address)"
+			if MultiplayerManager.is_webrtc_active:
+				list_text += "\nRoom Code: " + MultiplayerManager.room_code
+				list_text += "\n(Share this code with the other player)"
+			else:
+				var ips: Array[String] = []
+				for ip in IP.get_local_addresses():
+					if ip.contains(":") or ip == "127.0.0.1" or ip.begins_with("169.254."):
+						continue
+					ips.append(ip)
+				if ips.size() > 0:
+					list_text += "\nHost LAN IP: " + ", ".join(ips)
+					list_text += "\n(Connect using this IP address)"
 		else:
-			list_text += "\nConnected to: " + MultiplayerManager.host_ip
+			if MultiplayerManager.is_webrtc_active:
+				list_text += "\nRoom Code: " + MultiplayerManager.room_code
+			else:
+				list_text += "\nConnected to: " + MultiplayerManager.host_ip
 
 	player_list_label.text = list_text
 
