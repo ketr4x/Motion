@@ -172,8 +172,11 @@ func _process(delta: float) -> void:
 	
 	# Vote timer
 	if vote_active:
+		var old_ceil = int(ceil(vote_timer))
 		vote_timer -= delta
-		update_vote_ui_text()
+		var new_ceil = int(ceil(vote_timer))
+		if old_ceil != new_ceil:
+			update_vote_ui_text()
 		if vote_timer <= 0.0:
 			resolve_vote(false, "Vote timed out!")
 	elif is_showing:
@@ -191,9 +194,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_H:
 			try_start_vote()
-		elif event.keycode == KEY_F1:
+		elif event.keycode == KEY_F1 or event.keycode == KEY_Y:
 			try_vote(true)
-		elif event.keycode == KEY_F2:
+		elif event.keycode == KEY_F2 or event.keycode == KEY_N:
 			try_vote(false)
 
 # === Voting System (keep all RPC logic identical) ===
@@ -308,7 +311,7 @@ func check_game_state() -> void:
 		return
 	if local_player.oxygen < 30.0:
 		var oxygen_spot_nearby = false
-		for child in game_node.get_children():
+		for child in children:
 			if child.name.begins_with("Oxygen_") and child.get("is_active"):
 				var dist = local_player.global_position.distance_to(child.global_position)
 				if dist < 320.0:
@@ -320,7 +323,7 @@ func check_game_state() -> void:
 			trigger_tip("low_oxygen")
 		return
 	var teammate = null
-	for child in game_node.get_children():
+	for child in children:
 		if child is CharacterBody2D and child != local_player:
 			teammate = child
 			break
