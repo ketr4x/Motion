@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/bubble_boost.gd" id="1_bbbst"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bboost"]
-size = Vector2(100, 300)
+size = Vector2(80, 400)
 
 [node name="BubbleBoost" type="Area2D"]
 collision_layer = 0
@@ -13,15 +13,15 @@ script = ExtResource("1_bbbst")
 shape = SubResource("RectangleShape2D_bboost")
 
 [node name="CPUParticles2D" type="CPUParticles2D" parent="."]
-amount = 60
-lifetime = 1.2
+amount = 8
+lifetime = 2.5
 emission_shape = 3
-emission_rect_extents = Vector2(40, 140)
+emission_rect_extents = Vector2(35, 190)
 direction = Vector2(0, -1)
-spread = 5.0
-gravity = Vector2(0, -300)
-initial_velocity_min = 100.0
-initial_velocity_max = 250.0
-scale_amount_min = 3.0
-scale_amount_max = 8.0
-color = Color(0.6, 0.9, 1, 0.6)
+spread = 10.0
+gravity = Vector2(0, -40)
+initial_velocity_min = 20.0
+initial_velocity_max = 50.0
+scale_amount_min = 2.0
+scale_amount_max = 5.0
+color = Color(0.5, 0.8, 1, 0.35)

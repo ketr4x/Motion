@@ -3,10 +3,12 @@ extends Area2D
 @export var speed: float = 160.0
 @export var push_force: float = 350.0
 
+var fish_spritesheet: Texture2D
 var fish_list = []
 var time_passed: float = 0.0
 
 func _ready() -> void:
+	fish_spritesheet = preload("res://assets/rybki.png")
 	var rng = RandomNumberGenerator.new()
 	rng.seed = int(global_position.y)
 	
@@ -16,13 +18,13 @@ func _ready() -> void:
 			rng.randf_range(-50.0, 50.0)
 		)
 		var phase = rng.randf_range(0.0, PI * 2)
-		var size = rng.randf_range(0.8, 1.2)
-		var color = Color(rng.randf_range(0.8, 1.0), rng.randf_range(0.4, 0.6), rng.randf_range(0.1, 0.2), 0.9)
+		var size = rng.randf_range(2.5, 3.5)
+		var frame = rng.randi_range(0, 13)
 		fish_list.append({
 			"offset": offset,
 			"phase": phase,
 			"size": size,
-			"color": color
+			"frame": frame
 		})
 
 func _process(delta: float) -> void:
@@ -40,29 +42,19 @@ func _physics_process(_delta: float) -> void:
 			body.position.y -= 8.0
 
 func _draw() -> void:
+	if fish_spritesheet == null:
+		return
 	for fish in fish_list:
 		var pos = fish["offset"]
 		var phase = fish["phase"]
-		var size = fish["size"]
-		var color = fish["color"]
+		var sz = fish["size"]
+		var frame = fish["frame"]
 		
-		var wiggle = sin(time_passed * 16.0 + phase) * 3.0 * size
+		var wiggle_y = sin(time_passed * 6.0 + phase) * 4.0
+		var draw_pos = pos + Vector2(0, wiggle_y)
 		
-		var body_pts = PackedVector2Array([
-			pos + Vector2(-6, 0) * size,
-			pos + Vector2(-2, -3) * size,
-			pos + Vector2(4, -2) * size,
-			pos + Vector2(8, 0) * size,
-			pos + Vector2(4, 2) * size,
-			pos + Vector2(-2, 3) * size
-		])
+		var src_rect = Rect2(frame * 16, 0, 16, 16)
+		var dest_size = Vector2(16, 16) * sz
+		var dest_rect = Rect2(draw_pos - dest_size * 0.5, dest_size)
 		
-		var tail_pts = PackedVector2Array([
-			pos + Vector2(-5, 0) * size,
-			pos + Vector2(-10, -4 + wiggle) * size,
-			pos + Vector2(-10, 4 + wiggle) * size
-		])
-		
-		draw_polygon(tail_pts, [color])
-		draw_polygon(body_pts, [color])
-		draw_circle(pos + Vector2(4, -1) * size, 1.0 * size, Color(0.1, 0.1, 0.1, 1.0))
+		draw_texture_rect_region(fish_spritesheet, dest_rect, src_rect)

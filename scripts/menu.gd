@@ -410,7 +410,23 @@ func _setup_ending() -> void:
 		else:
 			ending_best_time_label.text = "Best Time: --:--.--"
 
+
 		ending_wr_label.text = "WR: 00:54.21"
+
+		# Animated entrance
+		ending_panel.modulate = Color(1, 1, 1, 0)
+		ending_panel.scale = Vector2(0.8, 0.8)
+		ending_panel.pivot_offset = ending_panel.size / 2.0
+		var tween_end = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+		tween_end.tween_property(ending_panel, "modulate:a", 1.0, 0.5)
+		tween_end.parallel().tween_property(ending_panel, "scale", Vector2(1.0, 1.0), 0.6)
+		
+		if MultiplayerManager.ending_victory:
+			# Flash effect on victory
+			ending_status_label.modulate = Color(3.0, 3.0, 3.0, 1.0)
+			var flash_tween = create_tween()
+			flash_tween.tween_property(ending_status_label, "modulate", Color(1, 1, 1, 1), 0.8)
+
 
 		_update_talo_leaderboard()
 
