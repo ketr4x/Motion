@@ -14,6 +14,9 @@ var player_status = {}
 var oxygen_bar_fill: StyleBoxFlat
 var ready_peers = []
 var game_started = false
+var current_seed: int = 0
+var game_start_time: float = 0.0
+var game_ended: bool = false
 
 func _ready() -> void:
 	if multiplayer.has_multiplayer_peer():
@@ -38,7 +41,9 @@ func spawn_local_player_for_preview() -> void:
 	player_instance.position = spawn_point_1.position
 	player_instance.set_multiplayer_authority(1)
 	add_child(player_instance)
-	$LevelGenerator.generate_level(randi())
+	current_seed = randi()
+	$LevelGenerator.generate_level(current_seed)
+	game_start_time = Time.get_ticks_msec()
 
 @rpc("any_peer", "call_local", "reliable")
 func notify_server_ready(peer_id: int) -> void:
@@ -68,6 +73,16 @@ func start_level_generation() -> void:
 	spawn_players()
 	var level_seed = randi()
 	$LevelGenerator.generate_level(level_seed)
+	if multiplayer.has_multiplayer_peer():
+		sync_level_seed.rpc(level_seed)
+	else:
+		current_seed = level_seed
+		game_start_time = Time.get_ticks_msec()
+
+@rpc("authority", "call_local", "reliable")
+func sync_level_seed(p_seed: int) -> void:
+	current_seed = p_seed
+	game_start_time = Time.get_ticks_msec()
 
 func spawn_players() -> void:
 	var spawn_points = [spawn_point_1, spawn_point_2]
@@ -92,7 +107,7 @@ func setup_hud() -> void:
 	oxygen_bar_fill = oxygen_bar.get_theme_stylebox("fill") as StyleBoxFlat
 
 func _process(_delta: float) -> void:
-	if multiplayer.has_multiplayer_peer() and multiplayer.is_server():
+	if not game_ended and multiplayer.has_multiplayer_peer() and multiplayer.is_server():
 		var all_doomed = true
 		var player_nodes = []
 		for peer_id in MultiplayerManager.players:
@@ -110,7 +125,8 @@ func _process(_delta: float) -> void:
 					break
 			if any_suffocating:
 				print("Game: All players are suffocating or dead. Game Over!")
-				transition_to_death.rpc()
+				var elapsed = Time.get_ticks_msec() - game_start_time
+				transition_to_death.rpc(elapsed)
 
 	if local_player == null:
 		var peer_id = multiplayer.get_unique_id() if multiplayer.has_multiplayer_peer() else 1
@@ -120,7 +136,20 @@ func _process(_delta: float) -> void:
 	
 	if local_player != null:
 		var depth_m = max(0, int(local_player.position.y / 10))
-		depth_label.text = "Depth: " + str(depth_m) + "m"
+		var elapsed_sec = 0.0
+		if game_start_time > 0.0:
+			elapsed_sec = (Time.get_ticks_msec() - game_start_time) / 1000.0
+		depth_label.text = "Depth: " + str(depth_m) + "m | Time: " + format_time(elapsed_sec)
+		
+		if not game_ended:
+			var current_depth = local_player.position.y
+			if current_depth >= $LevelGenerator.end_depth:
+				game_ended = true
+				var elapsed = Time.get_ticks_msec() - game_start_time
+				if multiplayer.has_multiplayer_peer():
+					win_game.rpc(elapsed)
+				else:
+					win_game(elapsed)
 		
 		if oxygen_bar:
 			oxygen_bar.value = local_player.oxygen
@@ -131,6 +160,29 @@ func _process(_delta: float) -> void:
 					oxygen_bar_fill.bg_color = Color(0.9, 0.6, 0.1)
 				else:
 					oxygen_bar_fill.bg_color = Color(0.9, 0.2, 0.2)
+
+func format_time(seconds: float) -> String:
+	var minutes = int(seconds / 60)
+	var secs = int(seconds) % 60
+	var msecs = int((seconds - int(seconds)) * 100)
+	return "%02d:%02d.%02d" % [minutes, secs, msecs]
+
+@rpc("any_peer", "call_local", "reliable")
+func win_game(final_time_ms: float) -> void:
+	game_ended = true
+	MultiplayerManager.last_seed = current_seed
+	MultiplayerManager.last_time = final_time_ms / 1000.0
+	MultiplayerManager.show_ending_screen = true
+	MultiplayerManager.ending_victory = true
+	
+	if multiplayer.has_multiplayer_peer():
+		multiplayer.multiplayer_peer = null
+	MultiplayerManager.players.clear()
+	
+	call_deferred("_transition_to_menu")
+
+func _transition_to_menu() -> void:
+	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 func player_died(peer_id: int) -> void:
 	print("Game: Player ", peer_id, " died.")
@@ -148,10 +200,11 @@ func player_died(peer_id: int) -> void:
 			
 	if all_dead:
 		print("Game: All players are dead. Game Over!")
+		var elapsed = Time.get_ticks_msec() - game_start_time
 		if multiplayer.has_multiplayer_peer():
-			transition_to_death.rpc()
+			transition_to_death.rpc(elapsed)
 		else:
-			_transition_to_death()
+			transition_to_death(elapsed)
 	else:
 		print("Game: Starting 5s respawn timer for player ", peer_id)
 		await get_tree().create_timer(5.0).timeout
@@ -178,8 +231,15 @@ func respawn_player(peer_id: int, pos: Vector2) -> void:
 		player_node.respawn(pos)
 
 @rpc("authority", "call_local", "reliable")
-func transition_to_death() -> void:
-	multiplayer.multiplayer_peer = null
+func transition_to_death(final_time_ms: float) -> void:
+	game_ended = true
+	MultiplayerManager.last_seed = current_seed
+	MultiplayerManager.last_time = final_time_ms / 1000.0
+	MultiplayerManager.show_ending_screen = true
+	MultiplayerManager.ending_victory = false
+	
+	if multiplayer.has_multiplayer_peer():
+		multiplayer.multiplayer_peer = null
 	MultiplayerManager.players.clear()
 	call_deferred("_transition_to_death")
 
@@ -223,4 +283,5 @@ func _on_peer_disconnected(id: int) -> void:
 					all_dead = false
 					break
 			if all_dead:
-				transition_to_death.rpc()
+				var elapsed = Time.get_ticks_msec() - game_start_time
+				transition_to_death.rpc(elapsed)
