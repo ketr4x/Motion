@@ -29,7 +29,7 @@ bg_color = Color(0.2, 0.8, 0.4, 1)
 script = ExtResource("1_e2o6t")
 
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=902365000]
-_spawnable_scenes = PackedStringArray("uid://df5s7hsk8vswp", "uid://cspiketscn", "uid://cjellyfishtscn", "uid://coxyspottscn", "uid://cshoaltscn")
+_spawnable_scenes = PackedStringArray("uid://df5s7hsk8vswp", "uid://cspiketscn", "uid://cjellyfishtscn", "uid://coxyspottscn", "uid://cshoaltscn", "uid://coopgatetscn")
 spawn_path = NodePath("..")
 
 [node name="SpawnPoint1" type="Node2D" parent="." unique_id=668066246]

@@ -34,6 +34,9 @@ var was_e_pressed: bool = false
 @onready var camera: Camera2D = $Camera2D
 @onready var sprite: Sprite2D = $Sprite2D
 
+var shake_amount: float = 0.0
+var shake_decay: float = 0.0
+
 func _enter_tree() -> void:
 	var peer_id = name.to_int()
 	if peer_id > 0:
@@ -202,6 +205,11 @@ func respawn(pos: Vector2) -> void:
 	if is_multiplayer_authority():
 		camera.global_position = Vector2(0, pos.y)
 
+func shake_camera(intensity: float, duration: float) -> void:
+	if is_multiplayer_authority():
+		shake_amount = intensity
+		shake_decay = intensity / duration
+
 func _process(delta: float) -> void:
 	if is_multiplayer_authority():
 		if not is_dead:
@@ -211,6 +219,16 @@ func _process(delta: float) -> void:
 			if survivor:
 				camera.global_position.x = 0
 				camera.global_position.y = lerp(camera.global_position.y, survivor.global_position.y, 5.0 * delta)
+		
+		# Camera shake logic
+		if shake_amount > 0.0:
+			shake_amount = max(0.0, shake_amount - shake_decay * delta)
+			camera.offset = Vector2(
+				randf_range(-shake_amount, shake_amount),
+				randf_range(-shake_amount, shake_amount)
+			)
+		else:
+			camera.offset = Vector2.ZERO
 				
 	if velocity.length() > speed * 1.3 and not is_dead:
 		if abs(velocity.x) > abs(velocity.y):

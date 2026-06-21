@@ -12,18 +12,48 @@ var player_status = {}
 @onready var depth_label: Label = $HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/InfoHBox/DepthLabel
 @onready var name_label: Label = $HUD/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/InfoHBox/NameLabel
 var oxygen_bar_fill: StyleBoxFlat
+var ready_peers = []
+var game_started = false
 
 func _ready() -> void:
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	if multiplayer.is_server():
-		spawn_players()
-		var level_seed = randi()
-		$LevelGenerator.generate_level(level_seed)
 		$ShoalTimer.timeout.connect(_on_shoal_timer_timeout)
+		register_ready_peer(1)
 	else:
 		$ShoalTimer.stop()
+		notify_server_ready.rpc_id(1, multiplayer.get_unique_id())
 		
 	setup_hud()
+
+@rpc("any_peer", "call_local", "reliable")
+func notify_server_ready(peer_id: int) -> void:
+	if multiplayer.is_server():
+		register_ready_peer(peer_id)
+
+func register_ready_peer(peer_id: int) -> void:
+	if not ready_peers.has(peer_id):
+		ready_peers.append(peer_id)
+	check_all_ready()
+
+func check_all_ready() -> void:
+	if game_started or not multiplayer.is_server():
+		return
+		
+	var all_ready = true
+	for p_id in MultiplayerManager.players:
+		if not ready_peers.has(p_id):
+			all_ready = false
+			break
+			
+	if all_ready and MultiplayerManager.players.size() > 0:
+		game_started = true
+		start_level_generation()
+
+func start_level_generation() -> void:
+	spawn_players()
+	var level_seed = randi()
+	$LevelGenerator.generate_level(level_seed)
 
 func spawn_players() -> void:
 	var spawn_points = [spawn_point_1, spawn_point_2]
@@ -129,11 +159,12 @@ func respawn_player(peer_id: int, pos: Vector2) -> void:
 
 @rpc("authority", "call_local", "reliable")
 func transition_to_death() -> void:
+	# Shut down networking immediately to prevent parsing remaining packets in this frame
+	multiplayer.multiplayer_peer = null
+	MultiplayerManager.players.clear()
 	call_deferred("_transition_to_death")
 
 func _transition_to_death() -> void:
-	multiplayer.multiplayer_peer = null
-	MultiplayerManager.players.clear()
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 func _on_shoal_timer_timeout() -> void:
@@ -160,12 +191,17 @@ func _on_shoal_timer_timeout() -> void:
 func _on_peer_disconnected(id: int) -> void:
 	if id in player_status:
 		player_status.erase(id)
+	if id in ready_peers:
+		ready_peers.erase(id)
 	
 	if multiplayer.is_server():
-		var all_dead = true
-		for p_id in player_status:
-			if player_status[p_id] == "alive":
-				all_dead = false
-				break
-		if all_dead:
-			transition_to_death.rpc()
+		if not game_started:
+			check_all_ready()
+		else:
+			var all_dead = true
+			for p_id in player_status:
+				if player_status[p_id] == "alive":
+					all_dead = false
+					break
+			if all_dead:
+				transition_to_death.rpc()
