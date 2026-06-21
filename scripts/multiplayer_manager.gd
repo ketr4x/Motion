@@ -28,6 +28,7 @@ var last_seed: int = 0
 var last_time: float = 0.0
 var show_ending_screen: bool = false
 var ending_victory: bool = false
+var game_ready_peers = []
 
 func get_best_time() -> float:
 	var config = ConfigFile.new()
@@ -176,6 +177,7 @@ func leave_game() -> void:
 
 func _reset_connection() -> void:
 	connection_in_progress = false
+	is_host = false
 	if ws_peer:
 		ws_peer.close()
 		ws_peer = null
@@ -185,6 +187,7 @@ func _reset_connection() -> void:
 	multiplayer.multiplayer_peer = null
 	_remote_description_set = false
 	_pending_candidates.clear()
+	game_ready_peers.clear()
 
 func _start_connection_timeout(duration: float) -> void:
 	connection_in_progress = true
@@ -363,6 +366,8 @@ func sync_players(new_players: Dictionary) -> void:
 
 func _on_peer_disconnected(id: int) -> void:
 	players.erase(id)
+	if id in game_ready_peers:
+		game_ready_peers.erase(id)
 	player_list_changed.emit()
 
 func _on_connected_to_server() -> void:
@@ -386,7 +391,21 @@ func start_game() -> void:
 
 @rpc("authority", "reliable", "call_local")
 func load_game_scene() -> void:
+	game_ready_peers.clear()
 	var current_scene = get_tree().current_scene
 	if current_scene and current_scene.has_method("play_start_transition"):
 		await current_scene.play_start_transition()
 	get_tree().change_scene_to_file("res://scenes/game.tscn")
+
+@rpc("any_peer", "call_local", "reliable")
+func notify_game_ready(peer_id: int) -> void:
+	if multiplayer.is_server():
+		var sender_id = multiplayer.get_remote_sender_id()
+		if sender_id == 0:
+			sender_id = peer_id
+		if not game_ready_peers.has(sender_id):
+			game_ready_peers.append(sender_id)
+		
+		var game_node = get_tree().current_scene
+		if game_node and game_node.name == "Game" and game_node.has_method("register_ready_peer"):
+			game_node.register_ready_peer(sender_id)

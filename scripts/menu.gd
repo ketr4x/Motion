@@ -504,7 +504,7 @@ func _update_talo_leaderboard() -> void:
 		leaderboard_list_label.text = "Failed to authenticate with Talo.\nMake sure settings.cfg has a valid access_key."
 		return
 
-	if MultiplayerManager.ending_victory:
+	if MultiplayerManager.ending_victory and MultiplayerManager.is_host:
 		leaderboard_list_label.text = "Submitting score..."
 		var res = await Talo.leaderboards.add_entry("speedrun_times", MultiplayerManager.last_time)
 		if res == null:

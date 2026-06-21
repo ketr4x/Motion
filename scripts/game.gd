@@ -28,10 +28,12 @@ func _ready() -> void:
 		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 		if multiplayer.is_server():
 			$ShoalTimer.timeout.connect(_on_shoal_timer_timeout)
-			register_ready_peer(1)
+			MultiplayerManager.notify_game_ready(1)
+			for peer_id in MultiplayerManager.game_ready_peers:
+				register_ready_peer(peer_id)
 		else:
 			$ShoalTimer.stop()
-			notify_server_ready.rpc_id(1, multiplayer.get_unique_id())
+			MultiplayerManager.notify_game_ready.rpc_id(1, multiplayer.get_unique_id())
 	else:
 		$ShoalTimer.timeout.connect(_on_shoal_timer_timeout)
 		spawn_local_player_for_preview()

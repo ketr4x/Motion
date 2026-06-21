@@ -1,9 +1,14 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/bubble_boost.gd" id="1_bbbst"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bboost"]
 size = Vector2(80, 400)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_bboost"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
 
 [node name="BubbleBoost" type="Area2D"]
 collision_layer = 0
@@ -25,3 +30,6 @@ initial_velocity_max = 50.0
 scale_amount_min = 2.0
 scale_amount_max = 5.0
 color = Color(0.5, 0.8, 1, 0.35)
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_bboost")
